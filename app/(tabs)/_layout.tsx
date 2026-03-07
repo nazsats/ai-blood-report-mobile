@@ -1,46 +1,82 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/colors';
-import { Platform } from 'react-native';
+import { useColors } from '../../constants/colors';
+
+function TabIcon({ name, focused, color }: { name: any; focused: boolean; color: string }) {
+    return (
+        <View style={[tabStyles.iconWrap, focused && tabStyles.iconWrapActive]}>
+            <Ionicons name={name} size={22} color={color} />
+        </View>
+    );
+}
+
+const tabStyles = StyleSheet.create({
+    iconWrap: {
+        width: 44, height: 44, borderRadius: 14,
+        alignItems: 'center', justifyContent: 'center',
+    },
+    iconWrapActive: {
+        backgroundColor: 'rgba(124,58,237,0.15)',
+    },
+});
 
 export default function TabsLayout() {
+    const C = useColors();
     return (
         <Tabs
             screenOptions={{
                 headerShown: false,
                 tabBarStyle: {
-                    backgroundColor: '#0f0520',
-                    borderTopColor: Colors.border,
+                    backgroundColor: C.tabBar,
+                    borderTopColor: C.tabBarBorder,
                     borderTopWidth: 1,
-                    height: Platform.OS === 'ios' ? 88 : 64,
-                    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
-                    paddingTop: 8,
+                    height: Platform.OS === 'ios' ? 84 : 62,
+                    paddingBottom: Platform.OS === 'ios' ? 24 : 6,
+                    paddingTop: 6,
+                    elevation: 8,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: -4 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 12,
                 },
-                tabBarActiveTintColor: Colors.primaryLight,
-                tabBarInactiveTintColor: Colors.textDim,
-                tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+                tabBarActiveTintColor: C.primaryLight,
+                tabBarInactiveTintColor: C.textDim,
+                tabBarLabelStyle: { fontSize: 10, fontWeight: '700', marginTop: 0 },
+                tabBarShowLabel: true,
             }}
         >
             <Tabs.Screen
+                name="home"
+                options={{
+                    title: 'Home',
+                    tabBarIcon: ({ focused, color }) =>
+                        <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} color={color} />,
+                }}
+            />
+            <Tabs.Screen
                 name="upload"
                 options={{
-                    title: 'Upload',
-                    tabBarIcon: ({ color, size }) => <Ionicons name="cloud-upload-outline" size={size} color={color} />,
+                    title: 'Analyze',
+                    tabBarIcon: ({ focused, color }) =>
+                        <TabIcon name={focused ? 'scan' : 'scan-outline'} focused={focused} color={color} />,
                 }}
             />
             <Tabs.Screen
                 name="history"
                 options={{
-                    title: 'History',
-                    tabBarIcon: ({ color, size }) => <Ionicons name="time-outline" size={size} color={color} />,
+                    title: 'Reports',
+                    tabBarIcon: ({ focused, color }) =>
+                        <TabIcon name={focused ? 'document-text' : 'document-text-outline'} focused={focused} color={color} />,
                 }}
             />
             <Tabs.Screen
                 name="profile"
                 options={{
                     title: 'Profile',
-                    tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
+                    tabBarIcon: ({ focused, color }) =>
+                        <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} color={color} />,
                 }}
             />
         </Tabs>
