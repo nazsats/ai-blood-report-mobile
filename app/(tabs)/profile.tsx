@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebaseClient';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
 import { useColors } from '../../constants/colors';
 import { useTheme } from '../../constants/theme';
@@ -42,6 +43,7 @@ export default function ProfileScreen() {
     const { user }                              = useAuth();
     const { isDark, toggleTheme }               = useTheme();
     const C                                     = useColors();
+    const router                                = useRouter();
     const [signingOut, setSigningOut]           = useState(false);
     const [editing, setEditing]                 = useState(false);
     const [saving, setSaving]                   = useState(false);
@@ -344,6 +346,34 @@ export default function ProfileScreen() {
                             <Text style={[styles.comingSoonText, { color: C.primaryLight }]}>Soon</Text>
                         </View>
                     </View>
+                </View>
+
+                {/* Health Tools */}
+                <View style={[styles.settingsCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+                    <Text style={[styles.cardTitle, { color: C.textPrimary }]}>Health Tools</Text>
+
+                    {[
+                        { label: 'Track Weight',  subtitle: 'Log & chart your weight trend', icon: 'barbell-outline',    color: '#34d399', route: '/weight-tracker' },
+                        { label: 'Fitness Hub',   subtitle: 'Log workouts & heart rate zones', icon: 'fitness-outline',   color: '#a78bfa', route: '/fitness'        },
+                        { label: 'AI Health Chat',subtitle: 'Chat with your blood report',   icon: 'chatbubble-outline', color: '#38bdf8', route: '/ai-chat'         },
+                        { label: 'Meal Scanner',  subtitle: 'Scan food & track nutrition',   icon: 'restaurant-outline', color: '#f59e0b', route: '/meal-scan'       },
+                    ].map((item, i, arr) => (
+                        <TouchableOpacity
+                            key={item.route}
+                            style={[styles.settingRow, i < arr.length - 1 && { borderBottomColor: C.borderLight }]}
+                            onPress={() => router.push(item.route as any)}
+                            activeOpacity={0.7}
+                        >
+                            <View style={[styles.settingIcon, { backgroundColor: item.color + '18' }]}>
+                                <Ionicons name={item.icon as any} size={16} color={item.color} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.settingLabel, { color: C.textPrimary }]}>{item.label}</Text>
+                                <Text style={[styles.settingSubtitle, { color: C.textDim }]}>{item.subtitle}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color={C.textDim} />
+                        </TouchableOpacity>
+                    ))}
                 </View>
 
                 {/* AI personalization tip */}

@@ -177,6 +177,75 @@ export function getStepMilestone(steps: number) {
     return { steps: 0, label: 'Start Moving!', emoji: '👟', color: '#94a3b8' };
 }
 
+// MET (Metabolic Equivalent of Task) values per workout type
+export const WORKOUT_TYPES = [
+    { id: 'gym',      label: 'Gym / Weights', emoji: '🏋️', met: 5.0 },
+    { id: 'run',      label: 'Running',        emoji: '🏃', met: 9.8 },
+    { id: 'yoga',     label: 'Yoga',           emoji: '🧘', met: 2.5 },
+    { id: 'cycling',  label: 'Cycling',        emoji: '🚴', met: 7.5 },
+    { id: 'swimming', label: 'Swimming',       emoji: '🏊', met: 8.0 },
+    { id: 'walking',  label: 'Walking',        emoji: '🚶', met: 3.5 },
+    { id: 'hiit',     label: 'HIIT',           emoji: '🔥', met: 10.0 },
+    { id: 'dance',    label: 'Dance',          emoji: '💃', met: 5.5 },
+];
+
+// Calories burned = MET × weight_kg × duration_hours
+export function estimateWorkoutCalories(metValue: number, durationMin: number, weightKg = 70): number {
+    return Math.round(metValue * weightKg * (durationMin / 60));
+}
+
+// Blood type diet recommendations
+export const BLOOD_TYPE_DIET: Record<string, { title: string; eat: string[]; avoid: string[]; tip: string }> = {
+    'A+': {
+        title: 'Type A — The Cultivator',
+        eat: ['Vegetables', 'Tofu & soy', 'Seafood', 'Grains', 'Beans & legumes', 'Fruits', 'Green tea'],
+        avoid: ['Red meat', 'Kidney beans', 'Lima beans', 'Wheat (sometimes)', 'Dairy'],
+        tip: 'Type A thrives on a plant-based diet. Your digestive system is sensitive — favor lighter proteins like fish and tofu.',
+    },
+    'A-': {
+        title: 'Type A — The Cultivator',
+        eat: ['Vegetables', 'Tofu & soy', 'Seafood', 'Grains', 'Beans & legumes', 'Fruits', 'Green tea'],
+        avoid: ['Red meat', 'Kidney beans', 'Lima beans', 'Wheat (sometimes)', 'Dairy'],
+        tip: 'Type A thrives on a plant-based diet. Your digestive system is sensitive — favor lighter proteins like fish and tofu.',
+    },
+    'B+': {
+        title: 'Type B — The Nomad',
+        eat: ['Green vegetables', 'Eggs', 'Certain meats (lamb, venison)', 'Low-fat dairy', 'Oatmeal', 'Rice'],
+        avoid: ['Corn', 'Lentils', 'Peanuts', 'Sesame seeds', 'Wheat', 'Chicken'],
+        tip: 'Type B benefits from dairy and a varied diet. Balance is key — include both animal and plant proteins.',
+    },
+    'B-': {
+        title: 'Type B — The Nomad',
+        eat: ['Green vegetables', 'Eggs', 'Certain meats (lamb, venison)', 'Low-fat dairy', 'Oatmeal', 'Rice'],
+        avoid: ['Corn', 'Lentils', 'Peanuts', 'Sesame seeds', 'Wheat', 'Chicken'],
+        tip: 'Type B benefits from dairy and a varied diet. Balance is key — include both animal and plant proteins.',
+    },
+    'O+': {
+        title: 'Type O — The Hunter',
+        eat: ['Lean meat', 'Poultry', 'Fish', 'Vegetables', 'Fruit', 'Olive oil'],
+        avoid: ['Grains (esp. wheat)', 'Legumes', 'Dairy', 'Processed foods'],
+        tip: 'Type O has a strong digestive system built for protein. High-intensity exercise is especially beneficial for you.',
+    },
+    'O-': {
+        title: 'Type O — The Hunter',
+        eat: ['Lean meat', 'Poultry', 'Fish', 'Vegetables', 'Fruit', 'Olive oil'],
+        avoid: ['Grains (esp. wheat)', 'Legumes', 'Dairy', 'Processed foods'],
+        tip: 'Type O has a strong digestive system built for protein. High-intensity exercise is especially beneficial for you.',
+    },
+    'AB+': {
+        title: 'Type AB — The Enigma',
+        eat: ['Tofu', 'Seafood', 'Dairy', 'Green vegetables', 'Kelp', 'Pineapple', 'Grapes'],
+        avoid: ['Red meat', 'Kidney beans', 'Seeds', 'Corn', 'Buckwheat'],
+        tip: 'Type AB is rare and benefits from a mix of A and B diets. Small frequent meals help your sensitive digestion.',
+    },
+    'AB-': {
+        title: 'Type AB — The Enigma',
+        eat: ['Tofu', 'Seafood', 'Dairy', 'Green vegetables', 'Kelp', 'Pineapple', 'Grapes'],
+        avoid: ['Red meat', 'Kidney beans', 'Seeds', 'Corn', 'Buckwheat'],
+        tip: 'Type AB is rare and benefits from a mix of A and B diets. Small frequent meals help your sensitive digestion.',
+    },
+};
+
 export const DAILY_CHALLENGES = [
     'Take 10,000 steps today',
     'Drink 8 glasses of water',
