@@ -25,7 +25,8 @@
         "backgroundColor": "#0a0414"
       },
       "package": "com.bloodai.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"]
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"],
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",

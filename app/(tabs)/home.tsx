@@ -601,6 +601,25 @@ export default function DashboardScreen() {
                 </TouchableOpacity>
             </View>
 
+            {/* Meal Scanner Banner */}
+            <TouchableOpacity
+                style={[styles.mealBanner, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                onPress={() => router.push('/meal-scan' as any)}
+                activeOpacity={0.85}
+            >
+                <View style={[styles.mealBannerIcon, { backgroundColor: 'rgba(16,185,129,0.12)' }]}>
+                    <Ionicons name="restaurant" size={26} color="#34d399" />
+                </View>
+                <View style={{ flex: 1 }}>
+                    <Text style={[styles.mealBannerTitle, { color: C.textPrimary }]}>AI Meal Scanner</Text>
+                    <Text style={[styles.mealBannerSub, { color: C.textDim }]}>Snap food → instant nutrition breakdown</Text>
+                </View>
+                <View style={[styles.mealBannerBadge, { backgroundColor: 'rgba(16,185,129,0.12)' }]}>
+                    <Text style={[styles.mealBannerBadgeText, { color: '#34d399' }]}>NEW</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={C.textDim} />
+            </TouchableOpacity>
+
             {/* Latest Blood Report */}
             {reportLoading ? (
                 <View style={[styles.reportLoadingCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
@@ -775,6 +794,14 @@ const styles = StyleSheet.create({
     saveStepsBtn:   { borderRadius: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
     saveStepsBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
     stepNote:       { fontSize: 11, textAlign: 'center', lineHeight: 16 },
+
+    // Meal scanner banner
+    mealBanner:     { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, padding: 14, borderWidth: 1 },
+    mealBannerIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    mealBannerTitle:{ fontSize: 15, fontWeight: '800', marginBottom: 2 },
+    mealBannerSub:  { fontSize: 12 },
+    mealBannerBadge:{ borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+    mealBannerBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
 
     footer:         { textAlign: 'center', fontSize: 11 },
 });

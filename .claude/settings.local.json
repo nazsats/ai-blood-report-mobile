@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "c:\\Users\\user\\OneDrive\\Desktop\\ai-blood-report\\ai-blood-report\\app\\api"
+    ],
+    "allow": [
+      "Bash(ipconfig:*)"
+    ]
+  }
+}
