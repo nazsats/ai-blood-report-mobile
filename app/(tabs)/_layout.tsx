@@ -32,8 +32,8 @@ export default function TabsLayout() {
                     backgroundColor: C.tabBar,
                     borderTopColor: C.tabBarBorder,
                     borderTopWidth: 1,
-                    height: Platform.OS === 'ios' ? 84 : 62,
-                    paddingBottom: Platform.OS === 'ios' ? 24 : 6,
+                    height: Platform.OS === 'ios' ? 88 : 64,
+                    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
                     paddingTop: 6,
                     elevation: 8,
                     shadowColor: '#000',
@@ -43,16 +43,24 @@ export default function TabsLayout() {
                 },
                 tabBarActiveTintColor: C.primaryLight,
                 tabBarInactiveTintColor: C.textDim,
-                tabBarLabelStyle: { fontSize: 10, fontWeight: '700', marginTop: 0 },
+                tabBarLabelStyle: { fontSize: 9, fontWeight: '700', marginTop: 0 },
                 tabBarShowLabel: true,
             }}
         >
             <Tabs.Screen
                 name="home"
                 options={{
-                    title: 'Home',
+                    title: 'Dashboard',
                     tabBarIcon: ({ focused, color }) =>
                         <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} color={color} />,
+                }}
+            />
+            <Tabs.Screen
+                name="feed"
+                options={{
+                    title: 'Feed',
+                    tabBarIcon: ({ focused, color }) =>
+                        <TabIcon name={focused ? 'newspaper' : 'newspaper-outline'} focused={focused} color={color} />,
                 }}
             />
             <Tabs.Screen

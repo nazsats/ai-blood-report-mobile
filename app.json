@@ -14,14 +14,18 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bloodai.app"
+      "bundleIdentifier": "com.bloodai.app",
+      "infoPlist": {
+        "NSMotionUsageDescription": "FitHealth AI uses motion data to automatically count your daily steps."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#0a0414"
       },
-      "package": "com.bloodai.app"
+      "package": "com.bloodai.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"]
     },
     "web": {
       "bundler": "metro",
@@ -39,7 +43,19 @@
       "expo-document-picker",
       "expo-asset",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow FitHealth AI to access your location to show air quality for your area."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow FitHealth AI to track your steps automatically using your device's motion sensor."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
