@@ -35,3 +35,7 @@ yarn-error.*
 # Editor
 .vscode/
 .idea/
+
+# Local-only docs (not for GitHub)
+APP_FEATURES.txt
+bug_report.txt
