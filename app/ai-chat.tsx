@@ -3,8 +3,9 @@ import { useState, useEffect, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ScrollView,
     TextInput, KeyboardAvoidingView, Platform, ActivityIndicator,
-    Animated,
+    Animated, StatusBar,
 } from 'react-native';
+import { FONTS } from '../constants/fonts';
 import {
     collection, query, where, orderBy, limit, getDocs,
 } from 'firebase/firestore';
@@ -46,6 +47,12 @@ export default function AiChatScreen() {
     const scrollRef  = useRef<ScrollView>(null);
     const enterAnim  = useRef(new Animated.Value(0)).current;
     const inputAnim  = useRef(new Animated.Value(1)).current;
+    // Bug 4 fix: mirror messages in ref to avoid stale closure in sendMessage
+    const messagesRef = useRef<Message[]>([]);
+    // Bug 5 fix: animated values for typing dots
+    const dot1 = useRef(new Animated.Value(0)).current;
+    const dot2 = useRef(new Animated.Value(0)).current;
+    const dot3 = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         Animated.spring(enterAnim, { toValue: 1, friction: 7, tension: 40, useNativeDriver: true }).start();
@@ -53,10 +60,23 @@ export default function AiChatScreen() {
     }, [user]);
 
     useEffect(() => {
+        messagesRef.current = messages; // Bug 4 fix: keep ref in sync
         if (messages.length > 0) {
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
         }
     }, [messages]);
+
+    // Bug 5 fix: staggered bounce animation for typing dots
+    useEffect(() => {
+        if (!sending) { dot1.setValue(0); dot2.setValue(0); dot3.setValue(0); return; }
+        const bounce = (v: Animated.Value) => Animated.sequence([
+            Animated.timing(v, { toValue: -5, duration: 280, useNativeDriver: true }),
+            Animated.timing(v, { toValue: 0,  duration: 280, useNativeDriver: true }),
+        ]);
+        const anim = Animated.loop(Animated.stagger(150, [bounce(dot1), bounce(dot2), bounce(dot3)]));
+        anim.start();
+        return () => anim.stop();
+    }, [sending]);
 
     const loadLatestReport = async () => {
         if (!user) return;
@@ -121,7 +141,8 @@ export default function AiChatScreen() {
 
         try {
             const token = await auth.currentUser?.getIdToken();
-            const apiMessages = messages
+            // Bug 4 fix: use ref to get latest messages (avoids stale closure)
+            const apiMessages = messagesRef.current
                 .filter(m => m.id !== 'welcome' && m.id !== 'no-report')
                 .map(m => ({ role: m.role, content: m.content }));
             apiMessages.push({ role: 'user', content: msgText });
@@ -239,7 +260,7 @@ export default function AiChatScreen() {
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : (StatusBar.currentHeight ?? 0)}
             >
                 {loadingReport ? (
                     <View style={styles.loadingCenter}>
@@ -260,9 +281,13 @@ export default function AiChatScreen() {
                                 <View style={[styles.assistantAvatar, { backgroundColor: C.primaryMuted }]}>
                                     <Ionicons name="pulse" size={12} color={C.primaryLight} />
                                 </View>
+                                {/* Bug 5 fix: animated bouncing dots instead of CSS animationDelay */}
                                 <View style={styles.typingDots}>
-                                    {[0, 1, 2].map(i => (
-                                        <View key={i} style={[styles.dot, { backgroundColor: C.primaryLight, animationDelay: `${i * 150}ms` }]} />
+                                    {[dot1, dot2, dot3].map((v, i) => (
+                                        <Animated.View
+                                            key={i}
+                                            style={[styles.dot, { backgroundColor: C.primaryLight, transform: [{ translateY: v }] }]}
+                                        />
                                     ))}
                                 </View>
                             </View>
@@ -327,13 +352,13 @@ const styles = StyleSheet.create({
     header:       { flexDirection: 'row', alignItems: 'center', paddingTop: 56, paddingBottom: 14, paddingHorizontal: 16, borderBottomWidth: 1 },
     backBtn:      { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    headerTitle:  { fontSize: 18, fontWeight: '900' },
+    headerTitle:  { fontSize: 18, fontFamily: FONTS.title },
     onlineDot:    { width: 8, height: 8, borderRadius: 4 },
-    headerSub:    { fontSize: 11, marginTop: 2 },
+    headerSub:    { fontSize: 11, fontFamily: FONTS.body, marginTop: 2 },
     clearBtn:     { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
 
     loadingCenter: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-    loadingText:   { fontSize: 13 },
+    loadingText:   { fontSize: 13, fontFamily: FONTS.body },
 
     messageList:    { flex: 1 },
     messageContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 12 },
@@ -342,18 +367,18 @@ const styles = StyleSheet.create({
     userBubble:       { borderBottomRightRadius: 4 },
     assistantBubble:  { borderBottomLeftRadius: 4, borderWidth: 1, flexDirection: 'row', gap: 8 },
     assistantAvatar:  { width: 22, height: 22, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
-    messageText:      { fontSize: 14, lineHeight: 20 },
-    messageTime:      { fontSize: 10, marginTop: 2 },
+    messageText:      { fontSize: 14, fontFamily: FONTS.body, lineHeight: 20 },
+    messageTime:      { fontSize: 10, fontFamily: FONTS.body, marginTop: 2 },
 
     typingDots: { flexDirection: 'row', gap: 4, alignItems: 'center', height: 20 },
     dot:        { width: 6, height: 6, borderRadius: 3 },
 
     suggestionsSection: { gap: 8, marginTop: 8 },
-    suggestionsLabel:   { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+    suggestionsLabel:   { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5 },
     suggestionChip:     { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, padding: 12, borderWidth: 1 },
-    suggestionText:     { flex: 1, fontSize: 13 },
+    suggestionText:     { flex: 1, fontSize: 13, fontFamily: FONTS.body },
 
     inputBar:   { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1 },
-    inputField: { flex: 1, borderRadius: 18, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, maxHeight: 100 },
+    inputField: { flex: 1, borderRadius: 18, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, fontFamily: FONTS.body, maxHeight: 100 },
     sendBtn:    { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
 });

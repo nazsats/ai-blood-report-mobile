@@ -12,7 +12,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'expo-router';
 import { useColors } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { format, subDays, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { FONTS } from '../constants/fonts';
 
 const MAX_ENTRIES = 14; // Show last 14 days in chart
 
@@ -120,7 +121,7 @@ export default function WeightTrackerScreen() {
         if (entries.length < 2) return (
             <View style={[styles.chartEmpty, { backgroundColor: C.inputBg }]}>
                 <Ionicons name="analytics-outline" size={28} color={C.textDim} />
-                <Text style={{ color: C.textDim, fontSize: 12, textAlign: 'center' }}>
+                <Text style={{ color: C.textDim, fontSize: 12, fontFamily: FONTS.body, textAlign: 'center' }}>
                     Log at least 2 entries to see your trend
                 </Text>
             </View>
@@ -153,13 +154,17 @@ export default function WeightTrackerScreen() {
                     const dy    = y2 - y1;
                     const len   = Math.sqrt(dx * dx + dy * dy);
                     const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+                    // Bug 1 fix: center-based positioning (transformOrigin not supported in RN)
+                    const cx    = (x1 + x2) / 2;
+                    const cy    = (y1 + y2) / 2 + 4;
                     return (
                         <View key={i} style={{
-                            position: 'absolute', left: x1, top: y1 + 4,
+                            position: 'absolute',
+                            left: cx - len / 2,
+                            top: cy - 1,
                             width: len, height: 2,
                             backgroundColor: lineColor, opacity: 0.8,
                             transform: [{ rotate: `${angle}deg` }],
-                            transformOrigin: 'left center',
                         }} />
                     );
                 })}
@@ -342,40 +347,40 @@ const styles = StyleSheet.create({
 
     header:      { flexDirection: 'row', alignItems: 'center' },
     backBtn:     { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    headerTitle: { fontSize: 22, fontWeight: '900' },
-    headerSub:   { fontSize: 12, marginTop: 1 },
+    headerTitle: { fontSize: 22, fontFamily: FONTS.title },
+    headerSub:   { fontSize: 12, fontFamily: FONTS.body, marginTop: 1 },
 
     statsRow:  { flexDirection: 'row', gap: 10 },
     statCard:  { flex: 1, borderRadius: 18, padding: 14, alignItems: 'center', borderWidth: 1, gap: 4 },
-    statVal:   { fontSize: 22, fontWeight: '900' },
-    statLbl:   { fontSize: 10, fontWeight: '600' },
+    statVal:   { fontSize: 22, fontFamily: FONTS.display },
+    statLbl:   { fontSize: 10, fontFamily: FONTS.body },
 
     card:      { borderRadius: 24, padding: 18, borderWidth: 1, gap: 14 },
-    cardTitle: { fontSize: 17, fontWeight: '800' },
+    cardTitle: { fontSize: 17, fontFamily: FONTS.bodyBold },
 
     unitRow:  { flexDirection: 'row', padding: 3 },
     unitBtn:  { flex: 1, borderRadius: 10, paddingVertical: 8, alignItems: 'center' },
-    unitText: { fontSize: 14, fontWeight: '700' },
+    unitText: { fontSize: 14, fontFamily: FONTS.bodyBold },
 
     inputRow:    { flexDirection: 'row', alignItems: 'center', gap: 12 },
     adjBtn:      { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    weightInput: { flex: 1, height: 60, borderWidth: 2, borderRadius: 16, fontSize: 28, fontWeight: '900' },
+    weightInput: { flex: 1, height: 60, borderWidth: 2, borderRadius: 16, fontSize: 28, fontFamily: FONTS.display },
 
     heightHint:     { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, padding: 10, borderWidth: 1 },
-    heightHintText: { flex: 1, fontSize: 12 },
+    heightHintText: { flex: 1, fontSize: 12, fontFamily: FONTS.body },
 
     saveBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 16, paddingVertical: 14 },
-    saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    saveBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyBold },
 
     // Chart
     chartEmpty: { borderRadius: 14, padding: 20, alignItems: 'center', gap: 8 },
-    axisLabel:  { position: 'absolute', left: 0, fontSize: 9 },
+    axisLabel:  { position: 'absolute', left: 0, fontSize: 9, fontFamily: FONTS.body },
     xAxis:      { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between' },
-    axisDate:   { fontSize: 9 },
+    axisDate:   { fontSize: 9, fontFamily: FONTS.body },
 
     // Entry list
     entryRow:    { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1 },
-    entryDate:   { fontSize: 13, fontWeight: '600' },
-    entryWeight: { fontSize: 15, fontWeight: '800', marginRight: 8 },
-    entryDiff:   { fontSize: 12, fontWeight: '700', minWidth: 36, textAlign: 'right' },
+    entryDate:   { fontSize: 13, fontFamily: FONTS.bodyBold },
+    entryWeight: { fontSize: 15, fontFamily: FONTS.bodyBold, marginRight: 8 },
+    entryDiff:   { fontSize: 12, fontFamily: FONTS.bodyBold, minWidth: 36, textAlign: 'right' },
 });

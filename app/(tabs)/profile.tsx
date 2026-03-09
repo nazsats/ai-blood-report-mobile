@@ -19,6 +19,7 @@ import { useTheme } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { format, subDays } from 'date-fns';
 import { estimateCalories, getStepMilestone } from '../../lib/fitnessData';
+import { FONTS } from '../../constants/fonts';
 
 // ─── Firestore collection for mobile users ───────────────────────────────────
 const MOBILE_USERS = 'mobileUsers';
@@ -27,6 +28,8 @@ interface HealthProfile {
     bloodType:          string;
     gender:             string;
     dateOfBirth:        string;
+    height:             string;
+    weight:             string;
     chronicConditions:  string;
     currentMedications: string;
     allergies:          string;
@@ -34,6 +37,7 @@ interface HealthProfile {
 
 const EMPTY: HealthProfile = {
     bloodType: '', gender: '', dateOfBirth: '',
+    height: '', weight: '',
     chronicConditions: '', currentMedications: '', allergies: '',
 };
 
@@ -87,6 +91,8 @@ export default function ProfileScreen() {
                         bloodType:          d.bloodType          || '',
                         gender:             d.gender             || '',
                         dateOfBirth:        d.dateOfBirth        || '',
+                        height:             d.height ? String(d.height) : '',
+                        weight:             d.weight ? String(d.weight) : '',
                         chronicConditions:  d.chronicConditions  || '',
                         currentMedications: d.currentMedications || '',
                         allergies:          d.allergies          || '',
@@ -203,6 +209,8 @@ export default function ProfileScreen() {
         { key: 'bloodType' as const,          icon: 'water-outline',        label: 'Blood Type',          color: '#f87171',      placeholder: 'e.g. A+, O-, AB+', multi: false },
         { key: 'gender' as const,             icon: 'person-outline',       label: 'Gender',              color: C.primaryLight, placeholder: 'e.g. Male, Female, Other', multi: false },
         { key: 'dateOfBirth' as const,        icon: 'calendar-outline',     label: 'Date of Birth',       color: C.primaryLight, placeholder: 'YYYY-MM-DD', multi: false },
+        { key: 'height' as const,             icon: 'resize-outline',       label: 'Height (cm)',         color: '#34d399',      placeholder: 'e.g. 170', multi: false },
+        { key: 'weight' as const,             icon: 'barbell-outline',      label: 'Weight (kg)',         color: '#a78bfa',      placeholder: 'e.g. 70', multi: false },
         { key: 'chronicConditions' as const,  icon: 'pulse-outline',        label: 'Chronic Conditions',  color: C.warning,      placeholder: 'e.g. Diabetes, Hypertension', multi: true },
         { key: 'currentMedications' as const, icon: 'medkit-outline',       label: 'Current Medications', color: C.secondary,    placeholder: 'e.g. Metformin 500mg daily', multi: true },
         { key: 'allergies' as const,          icon: 'alert-circle-outline', label: 'Allergies',           color: '#f87171',      placeholder: 'e.g. Penicillin, Sulfa drugs', multi: false },
@@ -514,33 +522,33 @@ const styles = StyleSheet.create({
     content:      { paddingHorizontal: 16, paddingTop: 56, paddingBottom: 40, gap: 14 },
 
     header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    headerLabel:  { fontSize: 12, fontWeight: '600', marginBottom: 2 },
-    headerTitle:  { fontSize: 28, fontWeight: '900' },
+    headerLabel:  { fontSize: 12, fontFamily: FONTS.body, marginBottom: 2 },
+    headerTitle:  { fontSize: 28, fontFamily: FONTS.title },
     editBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 5,
         borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6,
     },
-    editBtnText:  { fontSize: 13, fontWeight: '700' },
+    editBtnText:  { fontSize: 13, fontFamily: FONTS.bodyBold },
 
     // Avatar card
     avatarCard:   { borderRadius: 26, padding: 26, alignItems: 'center', borderWidth: 1, overflow: 'hidden', gap: 4 },
     avatarGlow:   { position: 'absolute', width: 200, height: 200, borderRadius: 100, top: -80 },
     avatarRing:   { padding: 3, borderRadius: 44, borderWidth: 2, marginBottom: 10 },
     avatar:       { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
-    avatarText:   { fontSize: 28, fontWeight: '900', color: '#fff' },
-    displayName:  { fontSize: 20, fontWeight: '800' },
-    emailText:    { fontSize: 13, marginBottom: 6 },
+    avatarText:   { fontSize: 28, fontFamily: FONTS.title, color: '#fff' },
+    displayName:  { fontSize: 20, fontFamily: FONTS.title },
+    emailText:    { fontSize: 13, fontFamily: FONTS.body, marginBottom: 6 },
     badgeRow:     { flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 8 },
     bloodBadge:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5 },
-    bloodBadgeText: { fontSize: 12, fontWeight: '700' },
+    bloodBadgeText: { fontSize: 12, fontFamily: FONTS.bodyBold },
     verifiedBadge:{ flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-    verifiedText: { fontSize: 12, fontWeight: '600' },
+    verifiedText: { fontSize: 12, fontFamily: FONTS.body },
 
     // Completion
     completionWrap:   { width: '100%', gap: 6, marginTop: 4 },
     completionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    completionLabel:  { fontSize: 11, fontWeight: '600' },
-    completionPct:    { fontSize: 12, fontWeight: '800' },
+    completionLabel:  { fontSize: 11, fontFamily: FONTS.body },
+    completionPct:    { fontSize: 12, fontFamily: FONTS.bodyBold },
     completionTrack:  { height: 6, borderRadius: 3, overflow: 'hidden' },
     completionFill:   { height: 6, borderRadius: 3 },
 
@@ -548,63 +556,63 @@ const styles = StyleSheet.create({
     statsCard:    { borderRadius: 20, padding: 16, borderWidth: 1, gap: 12 },
     statsRow:     { flexDirection: 'row', gap: 8 },
     statBox:      { flex: 1, borderRadius: 14, padding: 10, alignItems: 'center', gap: 3 },
-    statVal:      { fontSize: 15, fontWeight: '900' },
-    statLbl:      { fontSize: 9, fontWeight: '600', textAlign: 'center' },
+    statVal:      { fontSize: 15, fontFamily: FONTS.display },
+    statLbl:      { fontSize: 9, fontFamily: FONTS.bodyBold, textAlign: 'center' },
 
     // Settings
     settingsCard: { borderRadius: 20, padding: 16, borderWidth: 1, gap: 4 },
-    cardTitle:    { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+    cardTitle:    { fontSize: 15, fontFamily: FONTS.title, marginBottom: 4 },
     settingRow:   { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1 },
     settingIcon:  { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    settingLabel: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
-    settingSubtitle: { fontSize: 11 },
+    settingLabel: { fontSize: 14, fontFamily: FONTS.bodyBold, marginBottom: 2 },
+    settingSubtitle: { fontSize: 11, fontFamily: FONTS.body },
     comingSoon:   { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-    comingSoonText: { fontSize: 10, fontWeight: '700' },
+    comingSoonText: { fontSize: 10, fontFamily: FONTS.bodyBold },
 
     // Tip banner
     tipBanner:    { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, padding: 14, borderWidth: 1 },
     tipIcon:      { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-    tipTitle:     { fontSize: 14, fontWeight: '800', marginBottom: 3 },
-    tipBody:      { fontSize: 12, lineHeight: 17 },
+    tipTitle:     { fontSize: 14, fontFamily: FONTS.bodyBold, marginBottom: 3 },
+    tipBody:      { fontSize: 12, fontFamily: FONTS.body, lineHeight: 17 },
 
     // Profile card
     card:         { borderRadius: 22, padding: 16, borderWidth: 1, gap: 10 },
     cardHeader:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
     cardIconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-    cardTitle2:   { flex: 1, fontSize: 15, fontWeight: '700' },
+    cardTitle2:   { flex: 1, fontSize: 15, fontFamily: FONTS.title },
     aiBadge: {
         flexDirection: 'row', alignItems: 'center', gap: 3,
         borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3,
     },
-    aiBadgeText:  { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+    aiBadgeText:  { fontSize: 9, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5 },
 
     infoRow: {
         flexDirection: 'row', alignItems: 'flex-start', gap: 10,
         paddingVertical: 8, borderBottomWidth: 1,
     },
-    infoLabel:    { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-    infoValue:    { fontSize: 14, lineHeight: 20 },
+    infoLabel:    { fontSize: 10, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+    infoValue:    { fontSize: 14, fontFamily: FONTS.body, lineHeight: 20 },
 
     aiBanner:     { flexDirection: 'row', gap: 8, alignItems: 'flex-start', borderRadius: 12, padding: 10 },
-    aiBannerText: { flex: 1, fontSize: 12, lineHeight: 18 },
+    aiBannerText: { flex: 1, fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
 
     formField:        { gap: 5 },
-    fieldLabel:       { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-    fieldInput:       { borderWidth: 1, borderRadius: 12, padding: 12, fontSize: 14 },
+    fieldLabel:       { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5 },
+    fieldInput:       { borderWidth: 1, borderRadius: 12, padding: 12, fontSize: 14, fontFamily: FONTS.body },
     fieldInputMulti:  { minHeight: 72, textAlignVertical: 'top' },
     editActions:      { flexDirection: 'row', gap: 10, marginTop: 4 },
     cancelBtn:        { flex: 1, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-    cancelBtnText:    { fontWeight: '600', fontSize: 14 },
+    cancelBtnText:    { fontFamily: FONTS.body, fontSize: 14 },
     saveBtn: {
         flex: 2, borderRadius: 12, paddingVertical: 12,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     },
-    saveBtnText:      { color: '#fff', fontWeight: '700', fontSize: 14 },
+    saveBtnText:      { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 14 },
 
     signOutBtn: {
         borderRadius: 16, paddingVertical: 16,
         flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, borderWidth: 1,
     },
-    signOutText:      { fontSize: 16, fontWeight: '700' },
-    footer:           { textAlign: 'center', fontSize: 11 },
+    signOutText:      { fontSize: 16, fontFamily: FONTS.bodyBold },
+    footer:           { textAlign: 'center', fontSize: 11, fontFamily: FONTS.body },
 });

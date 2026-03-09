@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { useColors, useRiskColors, scoreColor } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import { FONTS } from '../../constants/fonts';
 
 /* ─── Trend Markers ─── */
 const TREND_MARKERS = [
@@ -26,7 +27,7 @@ const TREND_MARKERS = [
 function LineChart({ dataPoints, color, C }: { dataPoints: { date: string; value: number }[]; color: string; C: any }) {
     if (dataPoints.length < 2) return (
         <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ color: C.textDim, fontSize: 12 }}>Need 2+ reports to show trend</Text>
+            <Text style={{ color: C.textDim, fontSize: 12, fontFamily: FONTS.body }}>Need 2+ reports to show trend</Text>
         </View>
     );
 
@@ -45,33 +46,30 @@ function LineChart({ dataPoints, color, C }: { dataPoints: { date: string; value
         date: d.date,
     }));
 
-    const lastPoint = points[points.length - 1];
-    const prevPoint = points[points.length - 2];
-    const isImproving = lastPoint.value >= prevPoint.value;
-
     return (
         <View style={{ position: 'relative', height: H + 40, marginTop: 4 }}>
             {/* Y-axis labels */}
-            <Text style={{ position: 'absolute', left: 0, top: 0, fontSize: 9, color: C.textDim }}>{maxVal.toFixed(1)}</Text>
-            <Text style={{ position: 'absolute', left: 0, bottom: 20, fontSize: 9, color: C.textDim }}>{minVal.toFixed(1)}</Text>
+            <Text style={{ position: 'absolute', left: 0, top: 0, fontSize: 9, fontFamily: FONTS.body, color: C.textDim }}>{maxVal.toFixed(1)}</Text>
+            <Text style={{ position: 'absolute', left: 0, bottom: 20, fontSize: 9, fontFamily: FONTS.body, color: C.textDim }}>{minVal.toFixed(1)}</Text>
 
-            {/* Lines between points */}
+            {/* Lines between points — Bug 1 fix: use center-based positioning instead of transformOrigin */}
             {points.slice(0, -1).map((pt, i) => {
                 const next   = points[i + 1];
                 const dx     = next.x - pt.x;
                 const dy     = next.y - pt.y;
                 const length = Math.sqrt(dx * dx + dy * dy);
                 const angle  = (Math.atan2(dy, dx) * 180) / Math.PI;
+                const cx     = (pt.x + next.x) / 2 + 24; // midpoint + y-axis offset
+                const cy     = (pt.y + next.y) / 2 + 4;  // midpoint + top margin
                 return (
                     <View key={i} style={{
                         position: 'absolute',
-                        left: pt.x + 24,
-                        top: pt.y + 4,
+                        left: cx - length / 2,
+                        top: cy - 1, // center the 2px-tall line
                         width: length,
                         height: 2,
                         backgroundColor: color,
                         transform: [{ rotate: `${angle}deg` }],
-                        transformOrigin: 'left center',
                         opacity: 0.7,
                     }} />
                 );
@@ -81,10 +79,10 @@ function LineChart({ dataPoints, color, C }: { dataPoints: { date: string; value
             {points.map((pt, i) => (
                 <View key={i} style={{ position: 'absolute', left: pt.x + 16, top: pt.y }}>
                     <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color, borderWidth: 2, borderColor: C.bg }} />
-                    <Text style={{ fontSize: 8, color: C.textDim, marginTop: 2, textAlign: 'center' }}>
+                    <Text style={{ fontSize: 8, fontFamily: FONTS.body, color: C.textDim, marginTop: 2, textAlign: 'center' }}>
                         {pt.value.toFixed(1)}
                     </Text>
-                    <Text style={{ fontSize: 7, color: C.textDim, textAlign: 'center' }}>
+                    <Text style={{ fontSize: 7, fontFamily: FONTS.body, color: C.textDim, textAlign: 'center' }}>
                         {pt.date}
                     </Text>
                 </View>
@@ -150,7 +148,7 @@ function TrendSection({ reports, C }: { reports: any[]; C: any }) {
                                 >
                                     <Text style={[styles.markerChipText, {
                                         color: selectedMarker.key === m.key ? m.color : C.textDim,
-                                        fontWeight: selectedMarker.key === m.key ? '800' : '500',
+                                        fontFamily: selectedMarker.key === m.key ? FONTS.bodyBold : FONTS.body,
                                     }]}>{m.key}</Text>
                                 </TouchableOpacity>
                             ))}
@@ -172,7 +170,7 @@ function TrendSection({ reports, C }: { reports: any[]; C: any }) {
                                         name={trendDir === 'up' ? 'trending-up' : trendDir === 'down' ? 'trending-down' : 'remove'}
                                         size={14} color={trendColor}
                                     />
-                                    <Text style={{ color: trendColor, fontSize: 12, fontWeight: '700' }}>
+                                    <Text style={{ color: trendColor, fontSize: 12, fontFamily: FONTS.bodyBold }}>
                                         {trendDir === 'up' ? `+${(latestPoint.value - prevPoint.value).toFixed(1)}` : trendDir === 'down' ? `${(latestPoint.value - prevPoint.value).toFixed(1)}` : 'No change'}
                                     </Text>
                                 </View>
@@ -253,13 +251,13 @@ function CompareModal({ reports, selectedIds, onClose, C }: {
                             borderBottomColor: C.border,
                         }]}>
                             <Text style={[styles.compareTestName, { color: C.textSecondary }]} numberOfLines={1}>{row.name}</Text>
-                            <View style={styles.compareColVal}>
+                            <View style={styles.compareColValWrap}>
                                 <Text style={[styles.compareValText, { color: flagColor(row.f1) }]}>{row.v1}</Text>
                                 {row.f1 !== 'normal' && (
                                     <View style={[styles.compareFlagDot, { backgroundColor: flagColor(row.f1) }]} />
                                 )}
                             </View>
-                            <View style={styles.compareColVal}>
+                            <View style={styles.compareColValWrap}>
                                 <Text style={[styles.compareValText, { color: flagColor(row.f2) }]}>{row.v2}</Text>
                                 {row.f2 !== 'normal' && (
                                     <View style={[styles.compareFlagDot, { backgroundColor: flagColor(row.f2) }]} />
@@ -475,7 +473,7 @@ export default function HistoryScreen() {
                 }]}>
                     <Ionicons name="git-compare-outline" size={16} color={selectedForCompare.length === 2 ? '#fff' : C.primaryLight} />
                     <Text style={{
-                        flex: 1, fontSize: 13, fontWeight: '700',
+                        flex: 1, fontSize: 13, fontFamily: FONTS.bodyBold,
                         color: selectedForCompare.length === 2 ? '#fff' : C.primaryLight,
                     }}>
                         {selectedForCompare.length === 2
@@ -487,7 +485,7 @@ export default function HistoryScreen() {
                             style={[styles.compareGoBtn, { backgroundColor: '#fff' }]}
                             onPress={() => setShowCompare(true)}
                         >
-                            <Text style={{ color: C.primary, fontWeight: '800', fontSize: 12 }}>Compare</Text>
+                            <Text style={{ color: C.primary, fontFamily: FONTS.bodyBold, fontSize: 12 }}>Compare</Text>
                         </TouchableOpacity>
                     )}
                     <TouchableOpacity onPress={() => { setCompareMode(false); setSelectedForCompare([]); }}>
@@ -520,7 +518,7 @@ export default function HistoryScreen() {
                                 onPress={() => { setCompareMode(m => !m); setSelectedForCompare([]); }}
                             >
                                 <Ionicons name="git-compare-outline" size={14} color={compareMode ? '#fff' : C.primaryLight} />
-                                <Text style={{ fontSize: 11, fontWeight: '700', color: compareMode ? '#fff' : C.primaryLight }}>
+                                <Text style={{ fontSize: 11, fontFamily: FONTS.bodyBold, color: compareMode ? '#fff' : C.primaryLight }}>
                                     Compare
                                 </Text>
                             </TouchableOpacity>
@@ -625,42 +623,42 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
     container:   { flex: 1 },
     center:      { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-    loadingText: { fontSize: 14 },
+    loadingText: { fontSize: 14, fontFamily: FONTS.body },
 
     header:      { paddingTop: 56, paddingHorizontal: 16, paddingBottom: 12 },
     headerTop:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-    headerLabel: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
-    title:       { fontSize: 28, fontWeight: '900' },
+    headerLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, marginBottom: 2 },
+    title:       { fontSize: 28, fontFamily: FONTS.title },
 
     countBadge:     { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    countBadgeText: { fontSize: 16, fontWeight: '900' },
+    countBadgeText: { fontSize: 16, fontFamily: FONTS.display },
     compareBtn:     { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
 
     statsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
     statCard: { flex: 1, borderRadius: 16, padding: 12, alignItems: 'center', borderWidth: 1 },
-    statValue:{ fontSize: 15, fontWeight: '900', marginBottom: 2 },
-    statLabel:{ fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' },
+    statValue:{ fontSize: 15, fontFamily: FONTS.bodyBold, marginBottom: 2 },
+    statLabel:{ fontSize: 9, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' },
 
     searchRow:   { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, paddingHorizontal: 14, height: 46, borderWidth: 1 },
-    searchInput: { flex: 1, fontSize: 14 },
+    searchInput: { flex: 1, fontSize: 14, fontFamily: FONTS.body },
 
     listContent: { paddingHorizontal: 16, paddingBottom: 40, gap: 12, paddingTop: 4 },
 
     // Trend section
     trendCard:    { borderRadius: 22, padding: 16, borderWidth: 1, gap: 12, marginBottom: 4 },
     trendHeader:  { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    trendTitle:   { fontSize: 16, fontWeight: '800' },
-    trendSub:     { fontSize: 11, marginTop: 2 },
+    trendTitle:   { fontSize: 16, fontFamily: FONTS.bodyBold },
+    trendSub:     { fontSize: 11, fontFamily: FONTS.body, marginTop: 2 },
     markerChips:  { flexDirection: 'row', gap: 8 },
     markerChip:   { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1 },
     markerChipText: { fontSize: 12 },
     trendMeta:    { flexDirection: 'row', gap: 10, alignItems: 'center' },
     trendValBadge:{ flexDirection: 'row', alignItems: 'baseline', gap: 3, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
-    trendValNum:  { fontSize: 20, fontWeight: '900' },
-    trendValUnit: { fontSize: 11, fontWeight: '700' },
+    trendValNum:  { fontSize: 20, fontFamily: FONTS.display },
+    trendValUnit: { fontSize: 11, fontFamily: FONTS.bodyBold },
     trendDirBadge:{ flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1 },
-    trendNoData:  { fontSize: 12, textAlign: 'center', paddingVertical: 8 },
-    trendNormal:  { fontSize: 10, textAlign: 'center' },
+    trendNoData:  { fontSize: 12, fontFamily: FONTS.body, textAlign: 'center', paddingVertical: 8 },
+    trendNormal:  { fontSize: 10, fontFamily: FONTS.body, textAlign: 'center' },
 
     // Compare banner
     compareBanner:  { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, padding: 12, borderWidth: 1, marginBottom: 8 },
@@ -672,38 +670,39 @@ const styles = StyleSheet.create({
     cardIcon:    { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     compareCheckbox: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
     scoreCircle: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 1, marginLeft: 4 },
-    scoreCircleNum:  { fontSize: 22, fontWeight: '900' },
-    scoreCircleMax:  { fontSize: 12, fontWeight: '600' },
+    scoreCircleNum:  { fontSize: 22, fontFamily: FONTS.display },
+    scoreCircleMax:  { fontSize: 12, fontFamily: FONTS.body },
     deleteBtn:   { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    fileName:    { fontSize: 16, fontWeight: '700', marginBottom: 6 },
+    fileName:    { fontSize: 16, fontFamily: FONTS.bodyBold, marginBottom: 6 },
     dateRow:     { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 10 },
-    dateText:    { fontSize: 11 },
+    dateText:    { fontSize: 11, fontFamily: FONTS.body },
     chipRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
     chip:        { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1 },
-    chipText:    { fontSize: 11, fontWeight: '600' },
+    chipText:    { fontSize: 11, fontFamily: FONTS.bodyBold },
     dot:         { width: 6, height: 6, borderRadius: 3 },
     cardFooter:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, paddingTop: 10 },
     footerLeft:  { flexDirection: 'row', alignItems: 'center', gap: 5 },
-    footerText:  { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.4 },
+    footerText:  { fontSize: 10, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.4 },
 
     // Empty state
     emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
     emptyIcon:      { width: 80, height: 80, borderRadius: 24, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-    emptyTitle:     { fontSize: 20, fontWeight: '800', marginBottom: 8, textAlign: 'center' },
-    emptySubtitle:  { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
+    emptyTitle:     { fontSize: 20, fontFamily: FONTS.title, marginBottom: 8, textAlign: 'center' },
+    emptySubtitle:  { fontSize: 14, fontFamily: FONTS.body, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
     uploadNowBtn:   { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 28 },
-    uploadNowText:  { color: '#fff', fontWeight: '700', fontSize: 15 },
+    uploadNowText:  { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 15 },
 
     // Compare modal
-    compareModal:   { flex: 1 },
-    compareHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1 },
-    compareTitle:   { fontSize: 18, fontWeight: '900' },
-    closeBtn:       { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+    compareModal:      { flex: 1 },
+    compareHeader:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1 },
+    compareTitle:      { fontSize: 18, fontFamily: FONTS.title },
+    closeBtn:          { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     compareColHeaders: { flexDirection: 'row', padding: 12, borderBottomWidth: 1 },
-    compareColTest:    { flex: 1.2, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-    compareColVal:     { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
+    compareColTest:    { flex: 1.2, fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase' },
+    compareColVal:     { flex: 1, fontSize: 11, fontFamily: FONTS.bodyBold },
     compareRow:        { flexDirection: 'row', padding: 12, borderBottomWidth: 1 },
-    compareTestName:   { flex: 1.2, fontSize: 12, fontWeight: '500' },
-    compareValText:    { fontSize: 13, fontWeight: '700' },
+    compareTestName:   { flex: 1.2, fontSize: 12, fontFamily: FONTS.body },
+    compareColValWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
+    compareValText:    { fontSize: 13, fontFamily: FONTS.bodyBold },
     compareFlagDot:    { width: 6, height: 6, borderRadius: 3 },
 });

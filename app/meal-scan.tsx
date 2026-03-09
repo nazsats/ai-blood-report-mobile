@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { auth } from '../lib/firebaseClient';
 import { BLOOD_TYPE_DIET } from '../lib/fitnessData';
+import { FONTS } from '../constants/fonts';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Macro { protein: number; carbs: number; fat: number; fiber: number; sugar: number; saturatedFat?: number }
@@ -85,8 +86,8 @@ function MacroBar({ label, value, total, color }: { label: string; value: number
 const mb = StyleSheet.create({
     macroRow:      { gap: 4 },
     macroLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-    macroLabel:    { fontSize: 12, fontWeight: '600', color: '#94a3b8' },
-    macroVal:      { fontSize: 12, fontWeight: '800', color: '#e2e8f0' },
+    macroLabel:    { fontSize: 12, fontFamily: FONTS.bodyBold, color: '#94a3b8' },
+    macroVal:      { fontSize: 12, fontFamily: FONTS.bodyBold, color: '#e2e8f0' },
     track:         { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
     fill:          { height: 6, borderRadius: 3 },
 });
@@ -821,39 +822,39 @@ const styles = StyleSheet.create({
     // Header
     header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
     backBtn:     { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    headerLabel: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
-    headerTitle: { fontSize: 24, fontWeight: '900' },
+    headerLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, marginBottom: 2 },
+    headerTitle: { fontSize: 24, fontFamily: FONTS.title },
     headerIcon:  { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 
     // Daily summary
     dailyCard:    { borderRadius: 22, padding: 16, borderWidth: 1, gap: 10 },
     dailyCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    dailyLabel:   { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-    dailyDate:    { fontSize: 12 },
+    dailyLabel:   { fontSize: 12, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5 },
+    dailyDate:    { fontSize: 12, fontFamily: FONTS.body },
     dailyRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     dailyCalBlock:{ gap: 2 },
-    dailyCal:     { fontSize: 36, fontWeight: '900' },
-    dailyCalLabel:{ fontSize: 12 },
+    dailyCal:     { fontSize: 36, fontFamily: FONTS.display },
+    dailyCalLabel:{ fontSize: 12, fontFamily: FONTS.body },
     dailyMacros:  { flexDirection: 'row', gap: 8 },
     dailyMacroBox:{ borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center', gap: 2 },
-    dailyMacroKey:{ fontSize: 11, fontWeight: '800' },
-    dailyMacroVal:{ fontSize: 13, fontWeight: '700' },
+    dailyMacroKey:{ fontSize: 11, fontFamily: FONTS.bodyBold },
+    dailyMacroVal:{ fontSize: 13, fontFamily: FONTS.bodyBold },
     calProgressTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
     calProgressFill:  { height: 6, borderRadius: 3 },
-    mealCountText:    { fontSize: 11 },
+    mealCountText:    { fontSize: 11, fontFamily: FONTS.body },
 
     // Tab bar
     tabBar:       { flexDirection: 'row', borderRadius: 18, borderWidth: 1, padding: 4, gap: 4 },
     tabBtn:       { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 14 },
     tabBtnActive: { backgroundColor: 'rgba(16,185,129,0.12)' },
-    tabLabel:     { fontSize: 12, fontWeight: '700' },
+    tabLabel:     { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     // Pick buttons
     pickRow:    { flexDirection: 'row', gap: 12 },
     pickBtn:    { flex: 1, borderRadius: 18, padding: 16, borderWidth: 1, alignItems: 'center', gap: 8 },
     pickIcon:   { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    pickLabel:  { fontSize: 14, fontWeight: '800' },
-    pickSub:    { fontSize: 11 },
+    pickLabel:  { fontSize: 14, fontFamily: FONTS.bodyBold },
+    pickSub:    { fontSize: 11, fontFamily: FONTS.body },
 
     // Image preview
     previewWrap:  { borderRadius: 20, overflow: 'hidden', position: 'relative' },
@@ -864,120 +865,120 @@ const styles = StyleSheet.create({
         borderRadius: 16, paddingVertical: 14,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     },
-    analyzeBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+    analyzeBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyBold },
 
     // Loading
     loadingCard:  { borderRadius: 20, padding: 24, borderWidth: 1, alignItems: 'center', gap: 14 },
-    loadingText:  { fontSize: 15, fontWeight: '700', textAlign: 'center' },
+    loadingText:  { fontSize: 15, fontFamily: FONTS.bodyBold, textAlign: 'center' },
     loadingDots:  { flexDirection: 'row', gap: 6 },
     loadingDot:   { width: 8, height: 8, borderRadius: 4 },
 
     // Saved badge
     savedBadge:  { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, padding: 10, borderWidth: 1 },
-    savedText:   { fontSize: 13, fontWeight: '700' },
+    savedText:   { fontSize: 13, fontFamily: FONTS.bodyBold },
 
     // Result header
     resultHeader: { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 14 },
-    foodName:     { fontSize: 18, fontWeight: '900', marginBottom: 4 },
-    servingSize:  { fontSize: 12, marginBottom: 6 },
+    foodName:     { fontSize: 18, fontFamily: FONTS.title, marginBottom: 4 },
+    servingSize:  { fontSize: 12, fontFamily: FONTS.body, marginBottom: 6 },
     confidenceRow:{ flexDirection: 'row', alignItems: 'center', gap: 5 },
     confidenceDot:{ width: 6, height: 6, borderRadius: 3 },
-    confidenceText:{ fontSize: 11 },
+    confidenceText:{ fontSize: 11, fontFamily: FONTS.body },
     scoreCircle:  { width: 60, height: 60, borderRadius: 30, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-    scoreNum:     { fontSize: 22, fontWeight: '900', lineHeight: 26 },
-    scoreLabel:   { fontSize: 9, fontWeight: '700' },
+    scoreNum:     { fontSize: 22, fontFamily: FONTS.display, lineHeight: 26 },
+    scoreLabel:   { fontSize: 9, fontFamily: FONTS.bodyBold },
 
     // Calorie card
     calorieCard:  { borderRadius: 18, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-    calorieNum:   { fontSize: 40, fontWeight: '900', color: '#34d399' },
-    calorieLabel: { fontSize: 14, color: '#34d399', fontWeight: '600' },
+    calorieNum:   { fontSize: 40, fontFamily: FONTS.display, color: '#34d399' },
+    calorieLabel: { fontSize: 14, fontFamily: FONTS.bodyBold, color: '#34d399' },
     mealTypeBadge:{ marginLeft: 'auto', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
-    mealTypeBadgeText: { fontSize: 11, fontWeight: '700', color: '#34d399', textTransform: 'capitalize' },
+    mealTypeBadgeText: { fontSize: 11, fontFamily: FONTS.bodyBold, color: '#34d399', textTransform: 'capitalize' },
 
     // Cards
     card:       { borderRadius: 20, padding: 16, borderWidth: 1, gap: 12 },
-    cardTitle:  { fontSize: 15, fontWeight: '800' },
+    cardTitle:  { fontSize: 15, fontFamily: FONTS.bodyBold },
 
     // Macro grid
     macroGrid:   { flexDirection: 'row', gap: 8 },
     macroBox:    { flex: 1, borderRadius: 14, padding: 10, borderWidth: 1, alignItems: 'center', gap: 4 },
     macroEmoji:  { fontSize: 18 },
-    macroValue:  { fontSize: 16, fontWeight: '900' },
-    macroLabel2: { fontSize: 10, fontWeight: '600' },
+    macroValue:  { fontSize: 16, fontFamily: FONTS.display },
+    macroLabel2: { fontSize: 10, fontFamily: FONTS.bodyBold },
     subMacroRow: { flexDirection: 'row', gap: 8 },
     subMacroBox: { flex: 1, borderRadius: 12, padding: 10, alignItems: 'center', gap: 2 },
-    subMacroLabel: { fontSize: 10, fontWeight: '600' },
-    subMacroVal:   { fontSize: 14, fontWeight: '800' },
+    subMacroLabel: { fontSize: 10, fontFamily: FONTS.bodyBold },
+    subMacroVal:   { fontSize: 14, fontFamily: FONTS.bodyBold },
 
     // Micros table
     microHeader:  { flexDirection: 'row', paddingBottom: 6 },
-    microHeadLabel:{ flex: 1, fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+    microHeadLabel:{ flex: 1, fontSize: 10, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5 },
     microRow:     { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1 },
-    microName:    { flex: 1, fontSize: 13, fontWeight: '600' },
-    microAmount:  { flex: 1, fontSize: 12, textAlign: 'center' },
+    microName:    { flex: 1, fontSize: 13, fontFamily: FONTS.bodyBold },
+    microAmount:  { flex: 1, fontSize: 12, fontFamily: FONTS.body, textAlign: 'center' },
     microDvWrap:  { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'flex-end' },
     microDvBar:   { flex: 1, height: 4, borderRadius: 2, overflow: 'hidden' },
     microDvFill:  { height: 4, borderRadius: 2 },
-    microDvPct:   { fontSize: 11, fontWeight: '700', width: 32, textAlign: 'right' },
+    microDvPct:   { fontSize: 11, fontFamily: FONTS.bodyBold, width: 32, textAlign: 'right' },
 
     // Verdict / pros-cons
-    verdict:      { fontSize: 13, lineHeight: 20 },
+    verdict:      { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
     prosConsSection: { gap: 6 },
-    prosConsTitle:{ fontSize: 13, fontWeight: '800', marginBottom: 2 },
+    prosConsTitle:{ fontSize: 13, fontFamily: FONTS.bodyBold, marginBottom: 2 },
     prosConsRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
     prosConsDot:  { width: 6, height: 6, borderRadius: 3, marginTop: 6 },
-    prosConsText: { flex: 1, fontSize: 13, lineHeight: 19 },
+    prosConsText: { flex: 1, fontSize: 13, fontFamily: FONTS.body, lineHeight: 19 },
 
     // Tips
     tipRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: 10, borderWidth: 1 },
-    tipText:    { flex: 1, fontSize: 12, lineHeight: 18 },
+    tipText:    { flex: 1, fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
 
     // Empty state
     emptyCard:  { borderRadius: 22, padding: 28, borderWidth: 1, alignItems: 'center', gap: 12 },
     emptyIcon:  { width: 72, height: 72, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-    emptyTitle: { fontSize: 18, fontWeight: '900' },
-    emptySub:   { fontSize: 13, lineHeight: 20, textAlign: 'center' },
+    emptyTitle: { fontSize: 18, fontFamily: FONTS.title },
+    emptySub:   { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20, textAlign: 'center' },
 
     // Today's meals
-    sectionLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
+    sectionLabel: { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.8 },
     mealCard:   { borderRadius: 16, padding: 12, borderWidth: 1, gap: 4 },
     mealCardTop:{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     mealTypeChip: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-    mealTypeText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
-    mealCardCal:{ fontSize: 15, fontWeight: '900' },
-    mealCardName:  { fontSize: 14, fontWeight: '700' },
-    mealCardServing: { fontSize: 11 },
+    mealTypeText: { fontSize: 10, fontFamily: FONTS.bodyBold, textTransform: 'capitalize' },
+    mealCardCal:{ fontSize: 15, fontFamily: FONTS.display },
+    mealCardName:  { fontSize: 14, fontFamily: FONTS.bodyBold },
+    mealCardServing: { fontSize: 11, fontFamily: FONTS.body },
     mealCardMacros: { flexDirection: 'row', gap: 12, marginTop: 2 },
-    mealMacroChip:  { fontSize: 12, fontWeight: '700' },
+    mealMacroChip:  { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     // Food search
     searchInputRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 18, padding: 14, borderWidth: 1 },
-    searchInput:    { fontSize: 14, flex: 1 },
+    searchInput:    { fontSize: 14, fontFamily: FONTS.body, flex: 1 },
     searchSubmitBtn:{ backgroundColor: '#34d399', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 },
-    searchSubmitText: { color: '#fff', fontSize: 13, fontWeight: '800' },
+    searchSubmitText: { color: '#fff', fontSize: 13, fontFamily: FONTS.bodyBold },
 
     searchResultCard:   { borderRadius: 18, padding: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-    searchResultName:   { fontSize: 14, fontWeight: '700' },
-    searchResultBrand:  { fontSize: 11 },
+    searchResultName:   { fontSize: 14, fontFamily: FONTS.bodyBold },
+    searchResultBrand:  { fontSize: 11, fontFamily: FONTS.body },
     searchResultMacros: { flexDirection: 'row', gap: 8, marginTop: 2 },
-    searchMacroTag:     { fontSize: 11, fontWeight: '700' },
+    searchMacroTag:     { fontSize: 11, fontFamily: FONTS.bodyBold },
     searchResultRight:  { alignItems: 'center', gap: 4 },
-    searchResultCal:    { fontSize: 22, fontWeight: '900' },
-    searchResultCalLabel: { fontSize: 10 },
+    searchResultCal:    { fontSize: 22, fontFamily: FONTS.display },
+    searchResultCalLabel: { fontSize: 10, fontFamily: FONTS.body },
     logBtn:             { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1 },
-    logBtnText:         { fontSize: 12, fontWeight: '800' },
+    logBtnText:         { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     // Diet tips
     dietBanner:         { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 14 },
     dietBloodTypeBadge: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(124,58,237,0.2)', alignItems: 'center', justifyContent: 'center' },
-    dietBloodTypeText:  { fontSize: 18, fontWeight: '900', color: '#a78bfa' },
-    dietBannerTitle:    { fontSize: 15, fontWeight: '800' },
-    dietBannerTip:      { fontSize: 12, lineHeight: 18 },
+    dietBloodTypeText:  { fontSize: 18, fontFamily: FONTS.display, color: '#a78bfa' },
+    dietBannerTitle:    { fontSize: 15, fontFamily: FONTS.bodyBold },
+    dietBannerTip:      { fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
     dietChipRow:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     dietChip:           { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
-    dietChipText:       { fontSize: 12, fontWeight: '700' },
+    dietChipText:       { fontSize: 12, fontFamily: FONTS.bodyBold },
     goProfileBtn:       { borderRadius: 14, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, marginTop: 4 },
-    goProfileBtnText:   { fontSize: 13, fontWeight: '800' },
+    goProfileBtnText:   { fontSize: 13, fontFamily: FONTS.bodyBold },
 
-    disclaimer: { fontSize: 11, textAlign: 'center', lineHeight: 16 },
+    disclaimer: { fontSize: 11, fontFamily: FONTS.body, textAlign: 'center', lineHeight: 16 },
 });

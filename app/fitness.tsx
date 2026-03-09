@@ -17,6 +17,7 @@ import { useColors } from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { format, subDays, differenceInYears, parseISO } from 'date-fns';
 import { WORKOUT_TYPES, estimateWorkoutCalories } from '../lib/fitnessData';
+import { FONTS } from '../constants/fonts';
 
 const DAY_KEY      = (d: Date) => `steps_${format(d, 'yyyy-MM-dd')}`;
 const STEP_GOAL_KEY = 'stepGoal';
@@ -180,11 +181,6 @@ export default function FitnessScreen() {
 
     // ── HR Zone Computation ──────────────────────────────────────────────
     const maxHR     = userAge ? 220 - userAge : null;
-    const hrZones   = maxHR ? HR_ZONES.map(z => ({
-        ...z,
-        minBpm: Math.round(maxHR * z.pct[0] / 100),
-        maxBpm: Math.round(maxHR * z.pct[1] / 100),
-    })) : null;
 
     return (
         <ScrollView
@@ -210,13 +206,13 @@ export default function FitnessScreen() {
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                         <View style={[styles.streakBadge, { backgroundColor: '#f9731622' }]}>
                             <Text style={{ fontSize: 14 }}>🔥</Text>
-                            <Text style={{ color: '#f97316', fontWeight: '900', fontSize: 15 }}>{streak}</Text>
-                            <Text style={{ color: '#f97316', fontSize: 11 }}>days</Text>
+                            <Text style={{ color: '#f97316', fontFamily: FONTS.display, fontSize: 15 }}>{streak}</Text>
+                            <Text style={{ color: '#f97316', fontFamily: FONTS.body, fontSize: 11 }}>days</Text>
                         </View>
                         <View style={[styles.streakBadge, { backgroundColor: C.inputBg }]}>
                             <Text style={{ fontSize: 14 }}>🏆</Text>
-                            <Text style={{ color: C.textPrimary, fontWeight: '900', fontSize: 15 }}>{bestStreak}</Text>
-                            <Text style={{ color: C.textDim, fontSize: 11 }}>best</Text>
+                            <Text style={{ color: C.textPrimary, fontFamily: FONTS.display, fontSize: 15 }}>{bestStreak}</Text>
+                            <Text style={{ color: C.textDim, fontFamily: FONTS.body, fontSize: 11 }}>best</Text>
                         </View>
                     </View>
                 </View>
@@ -228,7 +224,7 @@ export default function FitnessScreen() {
                         const d       = new Date(day.date + 'T12:00:00');
                         return (
                             <View key={i} style={styles.calendarDay}>
-                                <Text style={[styles.calDayLabel, { color: isToday ? C.primaryLight : C.textDim, fontWeight: isToday ? '800' : '500' }]}>
+                                <Text style={[styles.calDayLabel, { color: isToday ? C.primaryLight : C.textDim, fontFamily: isToday ? FONTS.bodyBold : FONTS.body }]}>
                                     {format(d, 'EEE').charAt(0)}
                                 </Text>
                                 <View style={[styles.calDot, {
@@ -303,7 +299,7 @@ export default function FitnessScreen() {
                 {duration ? (
                     <View style={[styles.calEstimate, { backgroundColor: '#f9731611', borderColor: '#f9731633' }]}>
                         <Ionicons name="flame" size={16} color="#f97316" />
-                        <Text style={{ color: '#f97316', fontWeight: '700', fontSize: 13 }}>
+                        <Text style={{ color: '#f97316', fontFamily: FONTS.bodyBold, fontSize: 13 }}>
                             ~{estimateWorkoutCalories(selectedType.met, parseInt(duration, 10) || 0)} kcal estimated
                         </Text>
                     </View>
@@ -320,7 +316,7 @@ export default function FitnessScreen() {
 
                 {/* Notes */}
                 <TextInput
-                    style={[styles.notesInput, { backgroundColor: C.inputBg, borderColor: C.border, color: C.textPrimary }]}
+                    style={[styles.notesInput, { backgroundColor: C.inputBg, borderColor: C.border, color: C.textPrimary, fontFamily: FONTS.body }]}
                     placeholder="Add notes (optional)"
                     placeholderTextColor={C.textDim}
                     value={notes}
@@ -384,7 +380,7 @@ export default function FitnessScreen() {
                     <>
                         <View style={[styles.maxHrBadge, { backgroundColor: '#ef444422', borderColor: '#ef444444' }]}>
                             <Ionicons name="pulse" size={14} color="#ef4444" />
-                            <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 13 }}>
+                            <Text style={{ color: '#ef4444', fontFamily: FONTS.bodyBold, fontSize: 13 }}>
                                 Max HR: {maxHR} bpm (age {userAge})
                             </Text>
                         </View>
@@ -487,13 +483,13 @@ const styles = StyleSheet.create({
 
     header:      { flexDirection: 'row', alignItems: 'center' },
     backBtn:     { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    headerTitle: { fontSize: 22, fontWeight: '900' },
-    headerSub:   { fontSize: 12, marginTop: 1 },
+    headerTitle: { fontSize: 22, fontFamily: FONTS.title },
+    headerSub:   { fontSize: 12, fontFamily: FONTS.body, marginTop: 1 },
 
     card:       { borderRadius: 24, padding: 18, borderWidth: 1, gap: 14 },
     cardHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    cardTitle:  { fontSize: 17, fontWeight: '800' },
-    cardSub:    { fontSize: 12, marginTop: 2 },
+    cardTitle:  { fontSize: 17, fontFamily: FONTS.bodyBold },
+    cardSub:    { fontSize: 12, fontFamily: FONTS.body, marginTop: 2 },
 
     // Streak
     streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
@@ -501,57 +497,57 @@ const styles = StyleSheet.create({
     calendarDay: { alignItems: 'center', gap: 4 },
     calDayLabel: { fontSize: 11 },
     calDot:      { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    calSteps:    { fontSize: 9 },
-    calLegend:   { fontSize: 10, textAlign: 'center' },
+    calSteps:    { fontSize: 9, fontFamily: FONTS.body },
+    calLegend:   { fontSize: 10, fontFamily: FONTS.body, textAlign: 'center' },
 
     // Workout logger
     typeRow:    { flexDirection: 'row', gap: 8, paddingHorizontal: 4, paddingBottom: 4 },
     typeChip:   { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1 },
-    typeLabel:  { fontSize: 13, fontWeight: '600' },
-    fieldLabel: { fontSize: 12, fontWeight: '600', marginBottom: 6 },
+    typeLabel:  { fontSize: 13, fontFamily: FONTS.bodyBold },
+    fieldLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, marginBottom: 6 },
     durationRow:{ gap: 6 },
     durationInput: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     durBtn:     { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    durField:   { flex: 1, height: 48, borderWidth: 2, borderRadius: 14, fontSize: 22, fontWeight: '900' },
+    durField:   { flex: 1, height: 48, borderWidth: 2, borderRadius: 14, fontSize: 22, fontFamily: FONTS.display },
     calEstimate:{ flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, padding: 10, borderWidth: 1 },
     presetRow:  { flexDirection: 'row', gap: 8 },
     presetBtn:  { flex: 1, borderRadius: 12, paddingVertical: 8, alignItems: 'center', borderWidth: 1 },
-    presetText: { fontSize: 13, fontWeight: '700' },
+    presetText: { fontSize: 13, fontFamily: FONTS.bodyBold },
     notesInput: { borderRadius: 14, borderWidth: 1, padding: 12, fontSize: 13, minHeight: 56 },
     logBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 16, paddingVertical: 14 },
-    logBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    logBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyBold },
 
     // Recent workouts
-    emptyText:    { fontSize: 13, textAlign: 'center', paddingVertical: 8 },
+    emptyText:    { fontSize: 13, fontFamily: FONTS.body, textAlign: 'center', paddingVertical: 8 },
     workoutRow:   { flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderRadius: 14, padding: 12, borderWidth: 1 },
-    workoutLabel: { fontSize: 14, fontWeight: '700' },
-    workoutMeta:  { fontSize: 11, marginTop: 2 },
-    workoutNotes: { fontSize: 11, fontStyle: 'italic', marginTop: 2 },
+    workoutLabel: { fontSize: 14, fontFamily: FONTS.bodyBold },
+    workoutMeta:  { fontSize: 11, fontFamily: FONTS.body, marginTop: 2 },
+    workoutNotes: { fontSize: 11, fontFamily: FONTS.body, fontStyle: 'italic', marginTop: 2 },
 
     // HR Zones
     hrSetBtn:     { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1 },
-    hrSetBtnText: { fontSize: 12, fontWeight: '700' },
+    hrSetBtnText: { fontSize: 12, fontFamily: FONTS.bodyBold },
     maxHrBadge:   { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, padding: 10, borderWidth: 1 },
     zoneRow:      { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
     zoneTop:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    zoneName:     { fontSize: 13, fontWeight: '700', flex: 1 },
-    zoneBpm:      { fontSize: 12, fontWeight: '800' },
+    zoneName:     { fontSize: 13, fontFamily: FONTS.bodyBold, flex: 1 },
+    zoneBpm:      { fontSize: 12, fontFamily: FONTS.bodyBold },
     zoneTrack:    { height: 6, borderRadius: 3, overflow: 'hidden', marginTop: 4 },
     zoneFill:     { height: 6, borderRadius: 3 },
-    zoneDesc:     { fontSize: 11, marginTop: 3 },
+    zoneDesc:     { fontSize: 11, fontFamily: FONTS.body, marginTop: 3 },
     hrEmpty:      { borderRadius: 14, padding: 16, alignItems: 'center', gap: 8 },
-    hrEmptyText:  { fontSize: 13, textAlign: 'center', lineHeight: 18 },
+    hrEmptyText:  { fontSize: 13, fontFamily: FONTS.body, textAlign: 'center', lineHeight: 18 },
 
     // Suggestions
     suggRow:   { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 12, borderWidth: 1 },
-    suggTitle: { fontSize: 14, fontWeight: '700' },
-    suggSub:   { fontSize: 11, marginTop: 2 },
+    suggTitle: { fontSize: 14, fontFamily: FONTS.bodyBold },
+    suggSub:   { fontSize: 11, fontFamily: FONTS.body, marginTop: 2 },
 
     // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
     hrModal:      { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, borderWidth: 1, borderBottomWidth: 0, gap: 16 },
     modalHandle:  { width: 40, height: 4, borderRadius: 2, alignSelf: 'center' },
-    modalTitle:   { fontSize: 20, fontWeight: '900', textAlign: 'center' },
-    modalSub:     { fontSize: 13, textAlign: 'center', lineHeight: 18 },
-    hrInput:      { height: 60, borderWidth: 2, borderRadius: 16, fontSize: 28, fontWeight: '900', textAlign: 'center' },
+    modalTitle:   { fontSize: 20, fontFamily: FONTS.title, textAlign: 'center' },
+    modalSub:     { fontSize: 13, fontFamily: FONTS.body, textAlign: 'center', lineHeight: 18 },
+    hrInput:      { height: 60, borderWidth: 2, borderRadius: 16, fontSize: 28, fontFamily: FONTS.display, textAlign: 'center' },
 });

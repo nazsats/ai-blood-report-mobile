@@ -9,6 +9,7 @@ import { db } from '../../lib/firebaseClient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useColors, useRiskColors, scoreColor } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { FONTS } from '../../constants/fonts';
 
 type Tab = 'summary' | 'tests' | 'predictions' | 'meds' | 'nutrition' | 'lifestyle';
 
@@ -357,7 +358,8 @@ export default function ResultsScreen() {
                                 </View>
                             );
                         })}
-                        {nutrition.avoid?.length > 0 && (
+                        {/* Bug 13 fix: safe null/array check before accessing .length */}
+                        {Array.isArray(nutrition.avoid) && nutrition.avoid.length > 0 && (
                             <View style={[s.card, { borderColor: 'rgba(239,68,68,0.2)', backgroundColor: 'rgba(239,68,68,0.05)' }]}>
                                 <Text style={[s.cardTitle, { color: '#f87171' }]}>🚫 Avoid / Limit</Text>
                                 {(nutrition.avoid as string[]).map((item, i) => (
@@ -455,11 +457,11 @@ export default function ResultsScreen() {
 const s = StyleSheet.create({
     container:    { flex: 1 },
     center:       { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24 },
-    loadingText:  { fontSize: 14 },
+    loadingText:  { fontSize: 14, fontFamily: FONTS.body },
     notFoundIcon: { width: 80, height: 80, borderRadius: 24, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-    notFound:     { fontSize: 16 },
+    notFound:     { fontSize: 16, fontFamily: FONTS.body },
     backBtn:      { borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1 },
-    backBtnText:  { fontWeight: '600' },
+    backBtnText:  { fontFamily: FONTS.bodyBold },
 
     topBar: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -467,12 +469,12 @@ const s = StyleSheet.create({
         borderBottomWidth: 1,
     },
     topBack:  { padding: 4 },
-    topTitle: { flex: 1, fontSize: 16, fontWeight: '700', marginHorizontal: 12 },
+    topTitle: { flex: 1, fontSize: 16, fontFamily: FONTS.title, marginHorizontal: 12 },
 
     tabBar:       { maxHeight: 52, borderBottomWidth: 1 },
     tabBarInner:  { paddingHorizontal: 12, paddingVertical: 8, gap: 8, flexDirection: 'row' },
     tabBtn:       { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
-    tabLabel:     { fontSize: 12, fontWeight: '600' },
+    tabLabel:     { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     scroll:        { flex: 1 },
     scrollContent: { paddingHorizontal: 14, paddingTop: 14, paddingBottom: 40 },
@@ -481,68 +483,68 @@ const s = StyleSheet.create({
     // Score card
     scoreCard:     { borderRadius: 28, padding: 28, alignItems: 'center', overflow: 'hidden', borderWidth: 1, marginBottom: 0 },
     scoreGlow:     { position: 'absolute', width: 200, height: 200, borderRadius: 100, top: -60 },
-    scoreLabel:    { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.2 },
-    scoreValue:    { fontSize: 72, fontWeight: '900', lineHeight: 86 },
-    scoreMax:      { fontSize: 28 },
+    scoreLabel:    { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2 },
+    scoreValue:    { fontSize: 72, fontFamily: FONTS.display, lineHeight: 86 },
+    scoreMax:      { fontSize: 28, fontFamily: FONTS.display },
     riskBadge:     { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, marginTop: 8 },
     riskDot:       { width: 8, height: 8, borderRadius: 4 },
-    riskText:      { fontSize: 13, fontWeight: '700' },
+    riskText:      { fontSize: 13, fontFamily: FONTS.bodyBold },
     scoreStats:    { flexDirection: 'row', marginTop: 20, marginBottom: 4 },
     scoreStat:     { flex: 1, flexDirection: 'row' },
     scoreStatDiv:  { width: 1, alignSelf: 'stretch', marginHorizontal: 4 },
     scoreStatInner:{ flex: 1, alignItems: 'center' },
-    scoreStatNum:  { fontSize: 22, fontWeight: '900' },
-    scoreStatLabel:{ fontSize: 10, marginTop: 2 },
+    scoreStatNum:  { fontSize: 22, fontFamily: FONTS.display },
+    scoreStatLabel:{ fontSize: 10, fontFamily: FONTS.body, marginTop: 2 },
     shareBtn:      { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 16, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8 },
-    shareBtnText:  { fontSize: 13, fontWeight: '600' },
+    shareBtnText:  { fontSize: 13, fontFamily: FONTS.bodyBold },
 
     // Generic card
     card:          { borderRadius: 20, padding: 16, gap: 8, borderWidth: 1 },
     cardHeader:    { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    cardTitle:     { fontSize: 15, fontWeight: '700' },
-    bodyText:      { fontSize: 14, lineHeight: 22 },
-    dimText:       { fontSize: 12 },
-    doseText:      { fontSize: 12, fontWeight: '600' },
+    cardTitle:     { fontSize: 15, fontFamily: FONTS.bodyBold },
+    bodyText:      { fontSize: 14, fontFamily: FONTS.body, lineHeight: 22 },
+    dimText:       { fontSize: 12, fontFamily: FONTS.body },
+    doseText:      { fontSize: 12, fontFamily: FONTS.bodyBold },
     goalRow:       { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-    goalText:      { flex: 1, fontSize: 13, lineHeight: 20 },
+    goalText:      { flex: 1, fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
     groupWrap:     { gap: 10 },
-    groupLabel:    { fontSize: 13, fontWeight: '700', marginBottom: 2 },
+    groupLabel:    { fontSize: 13, fontFamily: FONTS.bodyBold, marginBottom: 2 },
 
     // Test card
     testCard:      { borderWidth: 1, borderRadius: 18, padding: 14 },
     testCardTop:   { flexDirection: 'row', alignItems: 'center' },
-    testName:      { fontSize: 14, fontWeight: '700', marginBottom: 3 },
-    testRange:     { fontSize: 11 },
+    testName:      { fontSize: 14, fontFamily: FONTS.bodyBold, marginBottom: 3 },
+    testRange:     { fontSize: 11, fontFamily: FONTS.body },
     testRight:     { alignItems: 'flex-end', gap: 5, marginLeft: 10 },
-    testValue:     { fontSize: 15, fontWeight: '800' },
+    testValue:     { fontSize: 15, fontFamily: FONTS.title },
     flagBadge:     { borderWidth: 1, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-    flagText:      { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+    flagText:      { fontSize: 9, fontFamily: FONTS.bodyBold, letterSpacing: 0.5 },
     testDetails:   { marginTop: 12, gap: 8, borderTopWidth: 1, paddingTop: 12 },
-    explanationText: { fontSize: 13, lineHeight: 20 },
+    explanationText: { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
     causesBlock:   { backgroundColor: 'rgba(139,92,246,0.08)', borderWidth: 1, borderColor: 'rgba(139,92,246,0.2)', borderRadius: 12, padding: 10 },
-    causesLabel:   { fontSize: 11, fontWeight: '700', color: '#c4b5fd', marginBottom: 4 },
-    causesText:    { fontSize: 12, lineHeight: 18 },
+    causesLabel:   { fontSize: 11, fontFamily: FONTS.bodyBold, color: '#c4b5fd', marginBottom: 4 },
+    causesText:    { fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
     adviceBlock:   { backgroundColor: 'rgba(6,182,212,0.08)', borderWidth: 1, borderColor: 'rgba(6,182,212,0.2)', borderRadius: 12, padding: 10 },
-    adviceLabel:   { fontSize: 11, fontWeight: '700', color: '#67e8f9', marginBottom: 4 },
-    adviceText:    { fontSize: 12, lineHeight: 18 },
+    adviceLabel:   { fontSize: 11, fontFamily: FONTS.bodyBold, color: '#67e8f9', marginBottom: 4 },
+    adviceText:    { fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
 
     // Predictions
     predTopRow:    { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
-    predCondition: { fontSize: 16, fontWeight: '800', marginBottom: 4 },
-    predTimeframe: { fontSize: 12 },
+    predCondition: { fontSize: 16, fontFamily: FONTS.title, marginBottom: 4 },
+    predTimeframe: { fontSize: 12, fontFamily: FONTS.body },
     predBadge:     { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
-    predBadgeText: { fontSize: 11, fontWeight: '700' },
+    predBadgeText: { fontSize: 11, fontFamily: FONTS.bodyBold },
     predBlock:     { borderWidth: 1, borderRadius: 12, padding: 12, gap: 4, marginTop: 6 },
-    predBlockLabel:{ fontSize: 11, fontWeight: '700' },
-    predBlockText: { fontSize: 13, lineHeight: 20 },
+    predBlockLabel:{ fontSize: 11, fontFamily: FONTS.bodyBold },
+    predBlockText: { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
 
     // Nutrition
-    mealItem:      { fontSize: 13, lineHeight: 20 },
-    avoidItem:     { fontSize: 13, lineHeight: 20, color: '#f87171' },
+    mealItem:      { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
+    avoidItem:     { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20, color: '#f87171' },
 
     // Disclaimer
     disclaimer:    { flexDirection: 'row', gap: 8, marginTop: 16, borderRadius: 12, padding: 12 },
-    disclaimerText:{ flex: 1, fontSize: 11, lineHeight: 16 },
+    disclaimerText:{ flex: 1, fontSize: 11, fontFamily: FONTS.body, lineHeight: 16 },
 
-    emptyText:     { fontSize: 14, textAlign: 'center', paddingVertical: 40 },
+    emptyText:     { fontSize: 14, fontFamily: FONTS.body, textAlign: 'center', paddingVertical: 40 },
 });

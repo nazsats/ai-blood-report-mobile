@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { auth, db, API_BASE_URL } from '../../lib/firebaseClient';
 import { useColors } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { FONTS } from '../../constants/fonts';
 
 const LOADING_STEPS = [
     { label: 'Scanning document structure...', icon: 'scan-outline' },
@@ -156,7 +157,7 @@ export default function AnalyzeScreen() {
                     uploadUri,
                     {
                         httpMethod: 'POST',
-                        uploadType: 1 as any,
+                        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
                         fieldName: 'file',
                         mimeType: selectedFile.type,
                         headers: { Authorization: `Bearer ${idToken}` },
@@ -413,17 +414,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row', alignItems: 'center', gap: 6,
         borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, marginBottom: 14, borderWidth: 1,
     },
-    headerBadgeText: { fontSize: 12, fontWeight: '700' },
-    title:          { fontSize: 34, fontWeight: '900', textAlign: 'center', lineHeight: 40, marginBottom: 8 },
+    headerBadgeText: { fontSize: 12, fontFamily: FONTS.bodyBold },
+    title:          { fontSize: 34, fontFamily: FONTS.title, textAlign: 'center', lineHeight: 40, marginBottom: 8 },
     titleAccent:    {},
-    subtitle:       { fontSize: 13, textAlign: 'center' },
+    subtitle:       { fontSize: 13, fontFamily: FONTS.body, textAlign: 'center' },
 
     // Profile tip
     profileTip: {
         flexDirection: 'row', alignItems: 'center', gap: 10,
         borderRadius: 16, padding: 14, borderWidth: 1,
     },
-    profileTipText: { flex: 1, fontSize: 12, lineHeight: 18 },
+    profileTipText: { flex: 1, fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
 
     // Pick card
     pickCard:       { borderRadius: 26, padding: 26, borderWidth: 1, alignItems: 'center' },
@@ -431,13 +432,13 @@ const styles = StyleSheet.create({
         width: 80, height: 80, borderRadius: 24, borderWidth: 1,
         alignItems: 'center', justifyContent: 'center', marginBottom: 14,
     },
-    pickTitle:      { fontSize: 20, fontWeight: '800', marginBottom: 6 },
-    pickSubtitle:   { fontSize: 13, textAlign: 'center', marginBottom: 24 },
+    pickTitle:      { fontSize: 20, fontFamily: FONTS.title, marginBottom: 6 },
+    pickSubtitle:   { fontSize: 13, fontFamily: FONTS.body, textAlign: 'center', marginBottom: 24 },
     optionRow:      { flexDirection: 'row', gap: 12, width: '100%' },
     optionBtn: {
         flex: 1, borderRadius: 18, paddingVertical: 18, alignItems: 'center', gap: 8, borderWidth: 1,
     },
-    optionLabel:    { fontSize: 12, fontWeight: '700' },
+    optionLabel:    { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     // Preview card
     previewCard:    { borderRadius: 26, padding: 18, borderWidth: 1 },
@@ -450,19 +451,19 @@ const styles = StyleSheet.create({
         position: 'absolute', top: 10, right: 10,
         borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
     },
-    pdfBadgeText:   { color: '#fff', fontSize: 10, fontWeight: '800' },
+    pdfBadgeText:   { color: '#fff', fontSize: 10, fontFamily: FONTS.bodyBold },
     fileInfoRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
     fileInfoLeft:   { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
-    fileName:       { flex: 1, fontSize: 13 },
+    fileName:       { flex: 1, fontSize: 13, fontFamily: FONTS.body },
     readyBadge:     { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-    readyText:      { fontSize: 11, fontWeight: '700' },
+    readyText:      { fontSize: 11, fontFamily: FONTS.bodyBold },
     analyzeBtn: {
         borderRadius: 16, paddingVertical: 16,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 10,
     },
-    analyzeBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+    analyzeBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.title },
     clearBtn:       { paddingVertical: 10, alignItems: 'center' },
-    clearBtnText:   { fontSize: 13 },
+    clearBtnText:   { fontSize: 13, fontFamily: FONTS.body },
 
     // Loading
     loadingScreen:  { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
@@ -472,20 +473,20 @@ const styles = StyleSheet.create({
         width: 88, height: 88, borderRadius: 28,
         alignItems: 'center', justifyContent: 'center',
     },
-    loadingTitle:   { fontSize: 26, fontWeight: '900', marginBottom: 8, textAlign: 'center' },
-    loadingSubtitle:{ fontSize: 14, marginBottom: 32, textAlign: 'center' },
+    loadingTitle:   { fontSize: 26, fontFamily: FONTS.title, marginBottom: 8, textAlign: 'center' },
+    loadingSubtitle:{ fontSize: 14, fontFamily: FONTS.body, marginBottom: 32, textAlign: 'center' },
     stepsContainer: { width: '100%', gap: 10, marginBottom: 24 },
     stepRow: {
         flexDirection: 'row', alignItems: 'center', gap: 12,
         padding: 14, borderRadius: 16, borderWidth: 1,
     },
     stepIcon:       { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    stepText:       { fontSize: 14 },
+    stepText:       { fontSize: 14, fontFamily: FONTS.body },
     privacyNote: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
         paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12,
     },
-    privacyText:    { fontSize: 11, flex: 1 },
+    privacyText:    { fontSize: 11, fontFamily: FONTS.body, flex: 1 },
 
     // How it works
     howCard:        { borderRadius: 20, padding: 16, borderWidth: 1, gap: 12 },

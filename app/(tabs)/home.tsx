@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ScrollView,
     Animated, Modal, TextInput, KeyboardAvoidingView,
-    Platform, ActivityIndicator, Alert,
+    Platform, Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -19,6 +19,8 @@ import {
     FITNESS_TIPS, estimateCalories, estimateActiveMinutes,
     getStepMilestone, DAILY_CHALLENGES,
 } from '../../lib/fitnessData';
+import { FONTS } from '../../constants/fonts';
+import { Confetti } from '../../components/Confetti';
 
 let Pedometer: any = null;
 let Location: any  = null;
@@ -35,7 +37,7 @@ const GREETING = () => {
 const TODAY_KEY    = () => `steps_${format(new Date(), 'yyyy-MM-dd')}`;
 const DAY_KEY      = (d: Date) => `steps_${format(d, 'yyyy-MM-dd')}`;
 const HABIT_KEY    = () => `habits_${format(new Date(), 'yyyy-MM-dd')}`;
-const STEP_GOAL_KEY = 'stepGoal';
+const STEP_GOAL_KEY   = 'stepGoal';
 const BEST_STREAK_KEY = 'bestStreak';
 const DEFAULT_STEP_GOAL = 10000;
 
@@ -54,7 +56,7 @@ function SkeletonLoader({ width, height, borderRadius = 10, style }: {
     useEffect(() => {
         const loop = Animated.loop(
             Animated.sequence([
-                Animated.timing(pulse, { toValue: 1, duration: 750, useNativeDriver: true }),
+                Animated.timing(pulse, { toValue: 1,    duration: 750, useNativeDriver: true }),
                 Animated.timing(pulse, { toValue: 0.35, duration: 750, useNativeDriver: true }),
             ]),
         );
@@ -72,12 +74,7 @@ function SkeletonLoader({ width, height, borderRadius = 10, style }: {
 }
 
 /* ─── Health Score Ring ─── */
-function HealthScoreRing({ score, size }: { score: number; size: number; C?: any }) {
-    const anim = useRef(new Animated.Value(0)).current;
-    useEffect(() => {
-        Animated.timing(anim, { toValue: score / 100, duration: 1200, useNativeDriver: false }).start();
-    }, [score]);
-
+function HealthScoreRing({ score, size }: { score: number; size: number }) {
     const progress = score / 100;
     const strokeW  = 12;
     const color    = score >= 75 ? '#10b981' : score >= 50 ? '#06b6d4' : score >= 30 ? '#f59e0b' : '#ef4444';
@@ -102,15 +99,19 @@ function HealthScoreRing({ score, size }: { score: number; size: number; C?: any
                     }} />
                 )}
                 <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 36, fontWeight: '900', color }}>{Math.round(score)}</Text>
-                    <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>/ 100</Text>
+                    <Text style={{ fontSize: 44, fontFamily: FONTS.display, color, lineHeight: 48 }}>
+                        {Math.round(score)}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: FONTS.body }}>
+                        / 100
+                    </Text>
                 </View>
             </View>
             <View style={{
                 backgroundColor: color + '22', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4,
                 borderWidth: 1, borderColor: color + '44',
             }}>
-                <Text style={{ color, fontSize: 12, fontWeight: '800' }}>{label}</Text>
+                <Text style={{ color, fontSize: 13, fontFamily: FONTS.bodyBold }}>{label}</Text>
             </View>
         </View>
     );
@@ -120,10 +121,6 @@ function HealthScoreRing({ score, size }: { score: number; size: number; C?: any
 function StepRing({ steps, goal, size, C }: { steps: number; goal: number; size: number; C: any }) {
     const progress  = Math.min(steps / goal, 1);
     const strokeW   = 10;
-    const anim      = useRef(new Animated.Value(0)).current;
-    useEffect(() => {
-        Animated.timing(anim, { toValue: progress, duration: 900, useNativeDriver: false }).start();
-    }, [progress]);
     const milestone = getStepMilestone(steps);
     return (
         <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
@@ -143,9 +140,11 @@ function StepRing({ steps, goal, size, C }: { steps: number; goal: number; size:
                 }} />
             )}
             <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 26, fontWeight: '900', color: C.textPrimary }}>{steps.toLocaleString()}</Text>
-                <Text style={{ fontSize: 10, color: C.textDim, fontWeight: '600' }}>steps</Text>
-                <Text style={{ fontSize: 13, marginTop: 2 }}>{milestone.emoji}</Text>
+                <Text style={{ fontSize: 30, fontFamily: FONTS.display, color: C.textPrimary, lineHeight: 34 }}>
+                    {steps.toLocaleString()}
+                </Text>
+                <Text style={{ fontSize: 10, color: C.textDim, fontFamily: FONTS.body }}>steps</Text>
+                <Text style={{ fontSize: 14, marginTop: 2 }}>{milestone.emoji}</Text>
             </View>
         </View>
     );
@@ -154,8 +153,10 @@ function StepRing({ steps, goal, size, C }: { steps: number; goal: number; size:
 /* ─── Weekly Chart ─── */
 function WeeklyChart({ weeklySteps, C }: { weeklySteps: number[]; C: any }) {
     const maxVal   = Math.max(...weeklySteps, 1000);
-    const days     = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    const todayIdx = (new Date().getDay() + 6) % 7;
+    // Build day labels relative to today (index 6 is always today)
+    const today    = new Date();
+    const days     = Array.from({ length: 7 }, (_, i) => format(subDays(today, 6 - i), 'EEEEE'));
+    const todayIdx = 6;
     return (
         <View style={[styles.chartCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
             <Text style={[styles.cardTitle, { color: C.textPrimary }]}>This Week's Activity</Text>
@@ -176,7 +177,6 @@ function WeeklyChart({ weeklySteps, C }: { weeklySteps: number[]; C: any }) {
                             }]} />
                             <Text style={[styles.chartDay, {
                                 color: isToday ? C.primaryLight : C.textDim,
-                                fontWeight: isToday ? '800' : '600',
                             }]}>{days[i]}</Text>
                         </View>
                     );
@@ -211,7 +211,7 @@ function LogStepsModal({ visible, currentSteps, onSave, onClose, C }: {
                             <Ionicons name="remove" size={20} color={C.textSecondary} />
                         </TouchableOpacity>
                         <TextInput
-                            style={[styles.stepsInput, { backgroundColor: C.inputBg, borderColor: C.primaryBorder, color: C.textPrimary }]}
+                            style={[styles.stepsInput, { backgroundColor: C.inputBg, borderColor: C.primaryBorder, color: C.textPrimary, fontFamily: FONTS.display, fontSize: 28 }]}
                             value={val} onChangeText={v => setVal(v.replace(/[^0-9]/g, ''))}
                             keyboardType="number-pad" textAlign="center"
                         />
@@ -261,7 +261,7 @@ function SetGoalModal({ visible, currentGoal, onSave, onClose, C }: {
                     <Text style={[styles.logSubtitle, { color: C.textDim }]}>Choose a goal that challenges you</Text>
                     <View style={styles.adjustRow}>
                         <TextInput
-                            style={[styles.stepsInput, { flex: 1, backgroundColor: C.inputBg, borderColor: C.primaryBorder, color: C.textPrimary }]}
+                            style={[styles.stepsInput, { flex: 1, backgroundColor: C.inputBg, borderColor: C.primaryBorder, color: C.textPrimary, fontFamily: FONTS.display, fontSize: 28 }]}
                             value={val} onChangeText={v => setVal(v.replace(/[^0-9]/g, ''))}
                             keyboardType="number-pad" textAlign="center"
                         />
@@ -310,7 +310,9 @@ function LatestReportCard({ report, C, onPress }: { report: any; C: any; onPress
                 </View>
             </View>
             <View style={styles.reportCardRight}>
-                <Text style={[styles.reportScore, { color: scoreColor }]}>{score.toFixed(1)}</Text>
+                <Text style={{ fontSize: 38, fontFamily: FONTS.display, color: scoreColor, lineHeight: 42 }}>
+                    {score.toFixed(1)}
+                </Text>
                 <Text style={[styles.reportScoreLabel, { color: C.textDim }]}>/ 10</Text>
                 <Ionicons name="chevron-forward" size={16} color={C.textDim} style={{ marginTop: 8 }} />
             </View>
@@ -351,14 +353,14 @@ function AqiWidget({ aqi, city, loading, C }: { aqi: number | null; city: string
     return (
         <View style={[styles.aqiCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
             <View style={styles.aqiLeft}>
-                <Text style={{ fontSize: 20 }}>{level.emoji}</Text>
+                <Text style={{ fontSize: 22 }}>{level.emoji}</Text>
                 <View>
                     <Text style={[styles.aqiCity, { color: C.textDim }]}>📍 {city || 'Your Location'}</Text>
                     <Text style={[styles.aqiLabel, { color: level.color }]}>{level.label} Air Quality</Text>
                 </View>
             </View>
             <View style={[styles.aqiBadge, { backgroundColor: level.color + '22', borderColor: level.color + '55' }]}>
-                <Text style={[styles.aqiNum, { color: level.color }]}>{aqi}</Text>
+                <Text style={{ fontSize: 24, fontFamily: FONTS.display, color: level.color, lineHeight: 28 }}>{aqi}</Text>
                 <Text style={[styles.aqiUnit, { color: level.color }]}>AQI</Text>
             </View>
         </View>
@@ -383,31 +385,49 @@ export default function DashboardScreen() {
     const [bestStreak, setBestStreak]   = useState(0);
     const [userHeight, setUserHeight]   = useState<number | null>(null);
 
-    const [latestReport, setLatestReport]     = useState<any>(null);
-    const [reportLoading, setReportLoading]   = useState(true);
+    const [latestReport, setLatestReport]   = useState<any>(null);
+    const [reportLoading, setReportLoading] = useState(true);
 
-    const [habits, setHabits] = useState<boolean[]>([false, false, false, false]);
+    const [habits, setHabits]               = useState<boolean[]>([false, false, false, false]);
     const [mealLoggedToday, setMealLoggedToday] = useState(false);
-    const [healthScore, setHealthScore] = useState(0);
+    const [healthScore, setHealthScore]     = useState(0);
 
-    const [aqi, setAqi]               = useState<number | null>(null);
-    const [aqiCity, setAqiCity]       = useState('');
+    const [aqi, setAqi]         = useState<number | null>(null);
+    const [aqiCity, setAqiCity] = useState('');
     const [aqiLoading, setAqiLoading] = useState(false);
 
     const [userName, setUserName] = useState('');
 
-    const enterAnim    = useRef(new Animated.Value(0)).current;
-    // Staggered card animations: [healthScore, streak, challenge, aqi, quickActions, steps, habits, report, chart]
-    const cardAnims    = useRef(Array.from({ length: 9 }, () => new Animated.Value(0))).current;
-    const stepInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    // ── Confetti state ────────────────────────────────────────────────────
+    const [confettiActive, setConfettiActive] = useState(false);
+    const [confettiMsg, setConfettiMsg]       = useState('');
+    const prevSteps    = useRef(0);
+    const prevHabits   = useRef<boolean[]>([false, false, false, false]);
+    const prevScore    = useRef(0);
+    const prevStreak   = useRef(0);
 
-    const tipIdx   = new Date().getDate() % FITNESS_TIPS.length;
-    const todayTip = FITNESS_TIPS[tipIdx];
+    const enterAnim = useRef(new Animated.Value(0)).current;
+    const cardAnims = useRef(Array.from({ length: 9 }, () => new Animated.Value(0))).current;
+    const stepInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    const aqiAbort = useRef<AbortController | null>(null);
+    // Badge bounce for confetti message
+    const badgeBounce  = useRef(new Animated.Value(0)).current;
+
+    const tipIdx    = new Date().getDate() % FITNESS_TIPS.length;
+    const todayTip  = FITNESS_TIPS[tipIdx];
     const challenge = DAILY_CHALLENGES[new Date().getDate() % DAILY_CHALLENGES.length];
 
+    // ── Fire confetti helper ──────────────────────────────────────────────
+    const fireConfetti = (msg: string) => {
+        setConfettiMsg(msg);
+        setConfettiActive(true);
+        badgeBounce.setValue(0);
+        Animated.spring(badgeBounce, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }).start();
+    };
+
+    // ── Init ──────────────────────────────────────────────────────────────
     useEffect(() => {
         Animated.spring(enterAnim, { toValue: 1, friction: 7, tension: 40, useNativeDriver: true }).start();
-        // Stagger cards in with 70ms delay between each
         Animated.stagger(70, cardAnims.map(a =>
             Animated.spring(a, { toValue: 1, friction: 9, tension: 55, useNativeDriver: true }),
         )).start();
@@ -415,7 +435,10 @@ export default function DashboardScreen() {
         initSteps();
         fetchAQI();
         loadHabits();
-        return () => { if (stepInterval.current) clearInterval(stepInterval.current); };
+        return () => {
+            if (stepInterval.current) clearInterval(stepInterval.current);
+            aqiAbort.current?.abort(); // Bug 3: cancel any in-flight AQI fetch on unmount
+        };
     }, []);
 
     useEffect(() => {
@@ -431,6 +454,36 @@ export default function DashboardScreen() {
         computeHealthScore();
     }, [steps, stepGoal, habits, latestReport, mealLoggedToday]);
 
+    // ── Confetti triggers ─────────────────────────────────────────────────
+    useEffect(() => {
+        if (steps >= stepGoal && prevSteps.current < stepGoal && prevSteps.current > 0) {
+            fireConfetti('🎯 Step goal crushed!');
+        }
+        prevSteps.current = steps;
+    }, [steps, stepGoal]);
+
+    useEffect(() => {
+        const allDone  = habits.every(Boolean);
+        const wasDone  = prevHabits.current.every(Boolean);
+        if (allDone && !wasDone) fireConfetti('🏆 All habits complete!');
+        prevHabits.current = [...habits];
+    }, [habits]);
+
+    useEffect(() => {
+        if (healthScore >= 80 && prevScore.current < 80 && prevScore.current > 0) {
+            fireConfetti('⭐ Health Score over 80!');
+        }
+        prevScore.current = healthScore;
+    }, [healthScore]);
+
+    useEffect(() => {
+        if (streak > 0 && streak > prevStreak.current && streak % 7 === 0) {
+            fireConfetti(`🔥 ${streak}-day streak!`);
+        }
+        prevStreak.current = streak;
+    }, [streak]);
+
+    // ── Health Score ──────────────────────────────────────────────────────
     const computeHealthScore = () => {
         const stepsScore   = Math.min(steps / stepGoal, 1) * 25;
         const habitsScore  = (habits.filter(Boolean).length / HABITS.length) * 25;
@@ -470,11 +523,8 @@ export default function DashboardScreen() {
             const d   = subDays(today, i);
             const val = await AsyncStorage.getItem(DAY_KEY(d));
             const s   = val ? parseInt(val, 10) : 0;
-            if (s >= goal) {
-                current++;
-            } else if (i > 0) {
-                break;
-            }
+            if (s >= goal) { current++; }
+            else if (i > 0) { break; }
         }
         const savedBest = await AsyncStorage.getItem(BEST_STREAK_KEY);
         const best      = Math.max(current, savedBest ? parseInt(savedBest, 10) : 0);
@@ -506,58 +556,70 @@ export default function DashboardScreen() {
             setPedometerActive(true);
             setSteps(pedometerSteps);
             await AsyncStorage.setItem(TODAY_KEY(), String(pedometerSteps));
+            // Bug 14 fix: clear old interval before creating a new one
+            if (stepInterval.current) clearInterval(stepInterval.current);
             stepInterval.current = setInterval(async () => {
                 const s = await getPedometerSteps();
                 if (s !== null) {
                     setSteps(s);
                     await AsyncStorage.setItem(TODAY_KEY(), String(s));
-                    const idx = (new Date().getDay() + 6) % 7;
-                    setWeeklySteps(prev => { const n = [...prev]; n[idx] = s; return n; });
+                    // Update today's bar (always index 6 in the 7-day array)
+                    setWeeklySteps(prev => { const n = [...prev]; n[6] = s; return n; });
                 }
             }, 30000);
         } else {
             const todayVal = await AsyncStorage.getItem(TODAY_KEY());
             setSteps(todayVal ? parseInt(todayVal, 10) : 0);
         }
-        loadWeeklySteps();
-        computeStreak(goal);
+        // Bug 6 fix: load weekly steps first (writes today to AsyncStorage), then compute streak
+        await loadWeeklySteps();
+        await computeStreak(goal);
     };
 
     const loadWeeklySteps = async () => {
-        const today     = new Date();
-        const dayOfWeek = (today.getDay() + 6) % 7;
+        const today = new Date();
         const weekly: number[] = [];
         for (let i = 6; i >= 0; i--) {
             const d   = subDays(today, i);
             const val = await AsyncStorage.getItem(DAY_KEY(d));
             weekly.push(val ? parseInt(val, 10) : 0);
         }
-        const startIdx = (7 - ((6 - dayOfWeek))) % 7;
-        const shifted  = [...weekly.slice(startIdx), ...weekly.slice(0, startIdx)];
-        setWeeklySteps(shifted.length === 7 ? shifted : weekly);
+        // index 0 = 6 days ago, index 6 = today (no shifting needed)
+        setWeeklySteps(weekly);
     };
 
     const fetchAQI = async () => {
         if (!Location) return;
+        // Bug 3 fix: abort any previous in-flight AQI request
+        aqiAbort.current?.abort();
+        const controller = new AbortController();
+        aqiAbort.current = controller;
         setAqiLoading(true);
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') { setAqiLoading(false); return; }
+            if (status !== 'granted' || controller.signal.aborted) { setAqiLoading(false); return; }
             const loc = await Location.getCurrentPositionAsync({ accuracy: 3 });
+            if (controller.signal.aborted) return;
             const { latitude, longitude } = loc.coords;
             const [aqiResp, cityResp] = await Promise.all([
-                fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=us_aqi`),
+                fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=us_aqi`, { signal: controller.signal }),
                 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`, {
                     headers: { 'User-Agent': 'FitHealthAI/1.0' },
+                    signal: controller.signal,
                 }),
             ]);
+            if (controller.signal.aborted) return;
             const aqiJson  = await aqiResp.json();
             const cityJson = await cityResp.json();
+            if (controller.signal.aborted) return;
             if (aqiJson?.current?.us_aqi !== undefined) setAqi(Math.round(aqiJson.current.us_aqi));
             const addr = cityJson?.address;
             setAqiCity(addr?.city || addr?.town || addr?.village || addr?.county || 'Your Location');
-        } catch {}
-        finally { setAqiLoading(false); }
+        } catch (e: any) {
+            if (e?.name !== 'AbortError') { /* silent */ }
+        } finally {
+            if (!controller.signal.aborted) setAqiLoading(false);
+        }
     };
 
     const loadLatestReport = async () => {
@@ -584,12 +646,9 @@ export default function DashboardScreen() {
     const checkMealLoggedToday = async () => {
         if (!user) return;
         try {
-            const today   = format(new Date(), 'yyyy-MM-dd');
-            const q       = query(
-                collection(db, 'mealLogs', `${user.uid}_${today}`, 'entries'),
-                limit(1),
-            );
-            const snap    = await getDocs(q);
+            const today = format(new Date(), 'yyyy-MM-dd');
+            const q     = query(collection(db, 'mealLogs', `${user.uid}_${today}`, 'entries'), limit(1));
+            const snap  = await getDocs(q);
             setMealLoggedToday(!snap.empty);
         } catch {}
     };
@@ -597,8 +656,7 @@ export default function DashboardScreen() {
     const saveSteps = async (newSteps: number) => {
         await AsyncStorage.setItem(TODAY_KEY(), String(newSteps));
         setSteps(newSteps);
-        const idx = (new Date().getDay() + 6) % 7;
-        setWeeklySteps(prev => { const n = [...prev]; n[idx] = newSteps; return n; });
+        setWeeklySteps(prev => { const n = [...prev]; n[6] = newSteps; return n; }); // index 6 = today
         computeStreak(stepGoal);
     };
 
@@ -616,7 +674,6 @@ export default function DashboardScreen() {
         totalKm:       parseFloat((weeklySteps.reduce((a, b) => a + (b * strideM) / 1000, 0)).toFixed(1)),
     };
 
-    // Helper to build animated card style
     const cardStyle = (idx: number) => ({
         opacity: cardAnims[idx],
         transform: [{
@@ -625,341 +682,345 @@ export default function DashboardScreen() {
     });
 
     return (
-        <ScrollView
-            style={[styles.container, { backgroundColor: C.bg }]}
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-        >
-            {/* ─── Header ─── */}
-            <Animated.View style={[styles.header, {
-                opacity: enterAnim,
-                transform: [{ translateY: enterAnim.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] }) }],
-            }]}>
-                <View>
-                    <Text style={[styles.greeting, { color: C.textMuted }]}>{GREETING()}</Text>
-                    <Text style={[styles.userName, { color: C.textPrimary }]}>{userName} 👋</Text>
-                    <Text style={[styles.dateText, { color: C.textDim }]}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-                </View>
-                <TouchableOpacity
-                    style={[styles.headerAvatar, { backgroundColor: C.primary }]}
-                    onPress={() => router.push('/(tabs)/profile')}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.headerAvatarText}>{(userName[0] ?? '?').toUpperCase()}</Text>
-                </TouchableOpacity>
-            </Animated.View>
-
-            {/* ─── Health Score Ring ─── */}
-            <Animated.View style={[
-                styles.healthScoreCard,
-                { backgroundColor: C.bgCard, borderColor: C.border },
-                cardStyle(0),
-            ]}>
-                <View style={styles.healthScoreHeader}>
+        <View style={{ flex: 1 }}>
+            <ScrollView
+                style={[styles.container, { backgroundColor: C.bg }]}
+                contentContainerStyle={styles.content}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* ─── Header ─── */}
+                <Animated.View style={[styles.header, {
+                    opacity: enterAnim,
+                    transform: [{ translateY: enterAnim.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] }) }],
+                }]}>
                     <View>
-                        <Text style={[styles.healthScoreTitle, { color: C.textPrimary }]}>Health Score</Text>
-                        <Text style={[styles.healthScoreSub, { color: C.textDim }]}>Steps · Habits · Report · Meals</Text>
+                        <Text style={[styles.greeting, { color: C.textMuted }]}>{GREETING()}</Text>
+                        <Text style={[styles.userName, { color: C.textPrimary }]}>{userName} 👋</Text>
+                        <Text style={[styles.dateText, { color: C.textDim }]}>{format(new Date(), 'EEEE, MMMM d')}</Text>
                     </View>
                     <TouchableOpacity
-                        style={[styles.healthScoreInfoBtn, { backgroundColor: C.inputBg }]}
-                        onPress={() => Alert.alert(
-                            'How is this calculated?',
-                            '• Steps (25 pts): Did you hit your step goal?\n• Habits (25 pts): Daily habits completed\n• Blood Report (25 pts): Your latest report score\n• Meals (25 pts): Logged a meal today?\n\nMax score: 100',
-                        )}
-                    >
-                        <Ionicons name="information-circle-outline" size={18} color={C.textDim} />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.healthScoreBody}>
-                    <HealthScoreRing score={healthScore} size={148} C={C} />
-                    <View style={styles.healthScorePillars}>
-                        {[
-                            { label: 'Steps',   icon: 'footsteps', val: `${Math.round(Math.min(steps / stepGoal, 1) * 100)}%`, color: '#06b6d4' },
-                            { label: 'Habits',  icon: 'checkbox',  val: `${habits.filter(Boolean).length}/${HABITS.length}`,  color: '#10b981' },
-                            { label: 'Report',  icon: 'pulse',     val: latestReport ? `${latestReport.overallScore}/10` : '—', color: '#f59e0b' },
-                            { label: 'Meals',   icon: 'restaurant',val: mealLoggedToday ? 'Logged' : 'None',                  color: '#a855f7' },
-                        ].map(p => (
-                            <View key={p.label} style={[styles.pillarRow, { backgroundColor: C.inputBg, borderColor: C.border }]}>
-                                <Ionicons name={p.icon as any} size={14} color={p.color} />
-                                <Text style={[styles.pillarLabel, { color: C.textDim }]}>{p.label}</Text>
-                                <Text style={[styles.pillarVal, { color: p.color }]}>{p.val}</Text>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-            </Animated.View>
-
-            {/* ─── Streak + Weekly Summary ─── */}
-            <Animated.View style={[styles.streakRow, cardStyle(1)]}>
-                <View style={[styles.streakCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-                    <Text style={{ fontSize: 28 }}>{streak > 0 ? '🔥' : '💤'}</Text>
-                    <Text style={[styles.streakNum, { color: streak > 0 ? '#f97316' : C.textDim }]}>{streak}</Text>
-                    <Text style={[styles.streakLabel, { color: C.textDim }]}>Day Streak</Text>
-                    <Text style={[styles.streakBest, { color: C.textDim }]}>Best: {bestStreak}</Text>
-                </View>
-                <View style={[styles.weeklySumCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-                    <Text style={[styles.weeklySumTitle, { color: C.textPrimary }]}>This Week</Text>
-                    <View style={styles.weeklySumGrid}>
-                        <View style={styles.weeklySumItem}>
-                            <Text style={[styles.weeklySumVal, { color: C.primaryLight }]}>
-                                {weeklySummary.totalSteps >= 1000 ? `${(weeklySummary.totalSteps / 1000).toFixed(1)}k` : weeklySummary.totalSteps}
-                            </Text>
-                            <Text style={[styles.weeklySumLbl, { color: C.textDim }]}>steps</Text>
-                        </View>
-                        <View style={styles.weeklySumItem}>
-                            <Text style={[styles.weeklySumVal, { color: '#f97316' }]}>{weeklySummary.totalCalories}</Text>
-                            <Text style={[styles.weeklySumLbl, { color: C.textDim }]}>kcal</Text>
-                        </View>
-                        <View style={styles.weeklySumItem}>
-                            <Text style={[styles.weeklySumVal, { color: '#34d399' }]}>{weeklySummary.totalKm}</Text>
-                            <Text style={[styles.weeklySumLbl, { color: C.textDim }]}>km</Text>
-                        </View>
-                        <View style={styles.weeklySumItem}>
-                            <Text style={[styles.weeklySumVal, { color: '#67e8f9' }]}>{weeklySummary.activeDays}</Text>
-                            <Text style={[styles.weeklySumLbl, { color: C.textDim }]}>active days</Text>
-                        </View>
-                    </View>
-                </View>
-            </Animated.View>
-
-            {/* ─── Challenge Banner ─── */}
-            <Animated.View style={[
-                styles.challengeBanner,
-                { backgroundColor: C.primaryMuted, borderColor: C.primaryBorder },
-                cardStyle(2),
-            ]}>
-                <Ionicons name="trophy-outline" size={16} color={C.primaryLight} />
-                <Text style={[styles.challengeText, { color: C.primaryLight }]}>
-                    <Text style={{ fontWeight: '800' }}>Today's Challenge: </Text>{challenge}
-                </Text>
-            </Animated.View>
-
-            {/* ─── AQI Widget ─── */}
-            <Animated.View style={cardStyle(3)}>
-                <AqiWidget aqi={aqi} city={aqiCity} loading={aqiLoading} C={C} />
-            </Animated.View>
-
-            {/* ─── Quick Actions (below AQI) ─── */}
-            <Animated.View style={cardStyle(4)}>
-                <Text style={[styles.sectionLabel, { color: C.textMuted, marginBottom: 2 }]}>Quick Actions</Text>
-                <View style={styles.quickActionsGrid}>
-                    {[
-                        { label: 'Analyze',    sub: 'Blood report', icon: 'scan',              color: '#f87171', bg: 'rgba(239,68,68,0.12)',    route: '/(tabs)/upload' },
-                        { label: 'Fitness Hub',sub: 'Workouts',     icon: 'barbell-outline',   color: '#a855f7', bg: 'rgba(168,85,247,0.12)',   route: '/fitness' },
-                        { label: 'Meal Scan',  sub: 'AI nutrition', icon: 'restaurant',        color: '#34d399', bg: 'rgba(16,185,129,0.12)',   route: '/meal-scan' },
-                        { label: 'AI Chat',    sub: 'Ask your data',icon: 'chatbubble-ellipses',color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',   route: '/ai-chat' },
-                        { label: 'Reports',    sub: 'History',      icon: 'document-text-outline', color: '#67e8f9', bg: 'rgba(6,182,212,0.12)',    route: '/(tabs)/history' },
-                        { label: 'Calculators',sub: 'BMI & more',   icon: 'calculator-outline',color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',    route: '/calculators' },
-                    ].map((a, i) => (
-                        <TouchableOpacity
-                            key={i}
-                            style={[styles.quickCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
-                            onPress={() => router.push(a.route as any)}
-                            activeOpacity={0.8}
-                        >
-                            <View style={[styles.quickIcon, { backgroundColor: a.bg }]}>
-                                <Ionicons name={a.icon as any} size={22} color={a.color} />
-                            </View>
-                            <Text style={[styles.quickLabel, { color: C.textPrimary }]}>{a.label}</Text>
-                            <Text style={[styles.quickSub, { color: C.textDim }]}>{a.sub}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </Animated.View>
-
-            {/* ─── Step Count Card ─── */}
-            <Animated.View style={[
-                styles.stepsCard,
-                { backgroundColor: C.bgCard, borderColor: C.border },
-                cardStyle(5),
-            ]}>
-                <View style={styles.stepsCardHeader}>
-                    <Text style={[styles.stepsCardTitle, { color: C.textPrimary }]}>Today's Steps</Text>
-                    <TouchableOpacity
-                        style={[styles.goalBadge, { backgroundColor: C.inputBg }]}
-                        onPress={() => setGoalVisible(true)}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="flag-outline" size={12} color={C.textMuted} />
-                        <Text style={[styles.goalBadgeText, { color: C.textMuted }]}>Goal: {stepGoal.toLocaleString()}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.stepsBody}>
-                    <StepRing steps={steps} goal={stepGoal} size={132} C={C} />
-                    <View style={styles.statsList}>
-                        <View style={[styles.statItem, { backgroundColor: C.inputBg, borderColor: C.border }]}>
-                            <Ionicons name="flame" size={16} color="#f87171" />
-                            <Text style={[styles.statValue, { color: C.textPrimary }]}>{calories}</Text>
-                            <Text style={[styles.statLabel, { color: C.textDim }]}>kcal</Text>
-                        </View>
-                        <View style={[styles.statItem, { backgroundColor: C.inputBg, borderColor: C.border }]}>
-                            <Ionicons name="time" size={16} color="#67e8f9" />
-                            <Text style={[styles.statValue, { color: C.textPrimary }]}>{activeMin}</Text>
-                            <Text style={[styles.statLabel, { color: C.textDim }]}>min</Text>
-                        </View>
-                        <View style={[styles.statItem, { backgroundColor: C.inputBg, borderColor: C.border }]}>
-                            <Ionicons name="map-outline" size={16} color="#34d399" />
-                            <Text style={[styles.statValue, { color: C.textPrimary }]}>{distanceKm}</Text>
-                            <Text style={[styles.statLabel, { color: C.textDim }]}>km</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={[styles.progressTrack, { backgroundColor: C.border }]}>
-                    <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: milestone.color }]} />
-                </View>
-                <Text style={[styles.milestoneText, { color: milestone.color }]}>
-                    {milestone.emoji} {milestone.label}
-                    {steps < stepGoal ? `  ·  ${(stepGoal - steps).toLocaleString()} to go` : '  ·  Goal achieved! 🎉'}
-                </Text>
-
-                {pedometerActive ? (
-                    <View style={[styles.logBtn, { backgroundColor: '#34d39922' }]}>
-                        <Ionicons name="checkmark-circle" size={18} color="#34d399" />
-                        <Text style={[styles.logBtnText, { color: '#34d399' }]}>Auto Tracking Active</Text>
-                    </View>
-                ) : (
-                    <TouchableOpacity style={[styles.logBtn, { backgroundColor: C.primary }]} onPress={() => setLogVisible(true)} activeOpacity={0.85}>
-                        <Ionicons name="add-circle-outline" size={18} color="#fff" />
-                        <Text style={styles.logBtnText}>Log Steps Manually</Text>
-                    </TouchableOpacity>
-                )}
-            </Animated.View>
-
-            {/* ─── Habit Tracker ─── */}
-            <Animated.View style={[
-                styles.habitCard,
-                { backgroundColor: C.bgCard, borderColor: C.border },
-                cardStyle(6),
-            ]}>
-                <View style={styles.habitHeader}>
-                    <Text style={[styles.habitTitle, { color: C.textPrimary }]}>Daily Habits</Text>
-                    <View style={[styles.habitPct, {
-                        backgroundColor: habits.filter(Boolean).length === HABITS.length ? '#10b98122' : C.inputBg,
-                    }]}>
-                        <Text style={{
-                            fontSize: 11, fontWeight: '800',
-                            color: habits.filter(Boolean).length === HABITS.length ? '#10b981' : C.textDim,
-                        }}>
-                            {habits.filter(Boolean).length}/{HABITS.length} done
-                        </Text>
-                    </View>
-                </View>
-                <View style={styles.habitGrid}>
-                    {HABITS.map((h, i) => {
-                        const done = habits[i];
-                        return (
-                            <TouchableOpacity
-                                key={i}
-                                style={[styles.habitItem, {
-                                    backgroundColor: done ? '#10b98115' : C.inputBg,
-                                    borderColor: done ? '#10b98144' : C.border,
-                                }]}
-                                onPress={() => toggleHabit(i)}
-                                activeOpacity={0.8}
-                            >
-                                <View style={[styles.habitCheck, {
-                                    backgroundColor: done ? '#10b981' : 'transparent',
-                                    borderColor: done ? '#10b981' : C.textDim,
-                                }]}>
-                                    {done && <Ionicons name="checkmark" size={12} color="#fff" />}
-                                </View>
-                                <Text style={{ fontSize: 18 }}>{h.emoji}</Text>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.habitItemLabel, { color: done ? '#10b981' : C.textPrimary }]}>{h.label}</Text>
-                                    <Text style={[styles.habitItemSub, { color: C.textDim }]}>{h.sub}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
-            </Animated.View>
-
-            {/* ─── Weight Tracker Banner ─── */}
-            <Animated.View style={cardStyle(7)}>
-                <TouchableOpacity
-                    style={[styles.featureBanner, { backgroundColor: C.bgCard, borderColor: C.border }]}
-                    onPress={() => router.push('/weight-tracker' as any)}
-                    activeOpacity={0.85}
-                >
-                    <View style={[styles.featureBannerIcon, { backgroundColor: 'rgba(168,85,247,0.12)' }]}>
-                        <Ionicons name="scale-outline" size={24} color="#a855f7" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.featureBannerTitle, { color: C.textPrimary }]}>Weight Tracker</Text>
-                        <Text style={[styles.featureBannerSub, { color: C.textDim }]}>Log weight · Track trend · Recalculate BMI</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color={C.textDim} />
-                </TouchableOpacity>
-
-                {/* ─── Latest Blood Report ─── */}
-                {reportLoading ? (
-                    <View style={[styles.skeletonReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-                        <View style={{ flex: 1, gap: 10 }}>
-                            <View style={styles.skeletonRow}>
-                                <SkeletonLoader width={14} height={14} borderRadius={4} />
-                                <SkeletonLoader width="40%" height={11} />
-                            </View>
-                            <SkeletonLoader width="70%" height={16} />
-                            <SkeletonLoader width="50%" height={11} />
-                            <SkeletonLoader width={80} height={24} borderRadius={10} />
-                        </View>
-                        <View style={{ alignItems: 'center', gap: 6 }}>
-                            <SkeletonLoader width={48} height={36} borderRadius={8} />
-                            <SkeletonLoader width={24} height={11} />
-                        </View>
-                    </View>
-                ) : latestReport ? (
-                    <>
-                        <Text style={[styles.sectionLabel, { color: C.textMuted, marginTop: 6 }]}>Blood Report</Text>
-                        <LatestReportCard report={latestReport} C={C} onPress={() => router.push(`/results/${latestReport.id}`)} />
-                    </>
-                ) : (
-                    <TouchableOpacity
-                        style={[styles.noReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
-                        onPress={() => router.push('/(tabs)/upload')}
+                        style={[styles.headerAvatar, { backgroundColor: C.primary }]}
+                        onPress={() => router.push('/(tabs)/profile')}
                         activeOpacity={0.8}
                     >
-                        <View style={[styles.noReportIcon, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
-                            <Ionicons name="scan" size={24} color="#f87171" />
+                        <Text style={styles.headerAvatarText}>{(userName[0] ?? '?').toUpperCase()}</Text>
+                    </TouchableOpacity>
+                </Animated.View>
+
+                {/* ─── Confetti achievement badge ─── */}
+                {confettiMsg !== '' && (
+                    <Animated.View style={[styles.achieveBadge, {
+                        transform: [{ scale: badgeBounce.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.5, 1.15, 1] }) }],
+                        opacity: badgeBounce,
+                    }]}>
+                        <Text style={styles.achieveText}>{confettiMsg}</Text>
+                    </Animated.View>
+                )}
+
+                {/* ─── Health Score Ring ─── */}
+                <Animated.View style={[
+                    styles.healthScoreCard,
+                    { backgroundColor: C.bgCard, borderColor: C.border },
+                    cardStyle(0),
+                ]}>
+                    <View style={styles.healthScoreHeader}>
+                        <View>
+                            <Text style={[styles.healthScoreTitle, { color: C.textPrimary }]}>Health Score</Text>
+                            <Text style={[styles.healthScoreSub, { color: C.textDim }]}>Steps · Habits · Report · Meals</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={[styles.healthScoreInfoBtn, { backgroundColor: C.inputBg }]}
+                            onPress={() => Alert.alert(
+                                'How is this calculated?',
+                                '• Steps (25 pts): Did you hit your step goal?\n• Habits (25 pts): Daily habits completed\n• Blood Report (25 pts): Your latest report score\n• Meals (25 pts): Logged a meal today?\n\nMax score: 100',
+                            )}
+                        >
+                            <Ionicons name="information-circle-outline" size={18} color={C.textDim} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.healthScoreBody}>
+                        <HealthScoreRing score={healthScore} size={148} />
+                        <View style={styles.healthScorePillars}>
+                            {[
+                                { label: 'Steps',  icon: 'footsteps-outline', val: `${Math.round(Math.min(steps / stepGoal, 1) * 100)}%`, color: '#06b6d4' },
+                                { label: 'Habits', icon: 'checkbox-outline',  val: `${habits.filter(Boolean).length}/${HABITS.length}`,   color: '#10b981' },
+                                { label: 'Report', icon: 'pulse-outline',     val: latestReport ? `${latestReport.overallScore}/10` : '—', color: '#f59e0b' },
+                                { label: 'Meals',  icon: 'restaurant-outline',val: mealLoggedToday ? '✓ Logged' : 'None',                  color: '#a855f7' },
+                            ].map(p => (
+                                <View key={p.label} style={[styles.pillarRow, { backgroundColor: C.inputBg, borderColor: C.border }]}>
+                                    <Ionicons name={p.icon as any} size={14} color={p.color} />
+                                    <Text style={[styles.pillarLabel, { color: C.textDim }]}>{p.label}</Text>
+                                    <Text style={[styles.pillarVal, { color: p.color }]}>{p.val}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                </Animated.View>
+
+                {/* ─── Streak + Weekly Summary ─── */}
+                <Animated.View style={[styles.streakRow, cardStyle(1)]}>
+                    <View style={[styles.streakCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+                        <Text style={{ fontSize: 28 }}>{streak > 0 ? '🔥' : '💤'}</Text>
+                        <Text style={{ fontSize: 42, fontFamily: FONTS.display, color: streak > 0 ? '#f97316' : C.textDim, lineHeight: 46 }}>{streak}</Text>
+                        <Text style={[styles.streakLabel, { color: C.textDim }]}>Day Streak</Text>
+                        <Text style={[styles.streakBest, { color: C.textDim }]}>Best: {bestStreak}</Text>
+                    </View>
+                    <View style={[styles.weeklySumCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+                        <Text style={[styles.weeklySumTitle, { color: C.textPrimary }]}>This Week</Text>
+                        <View style={styles.weeklySumGrid}>
+                            {[
+                                { val: weeklySummary.totalSteps >= 1000 ? `${(weeklySummary.totalSteps/1000).toFixed(1)}k` : String(weeklySummary.totalSteps), lbl: 'steps',       color: C.primaryLight },
+                                { val: String(weeklySummary.totalCalories), lbl: 'kcal',        color: '#f97316' },
+                                { val: String(weeklySummary.totalKm),       lbl: 'km',          color: '#34d399' },
+                                { val: String(weeklySummary.activeDays),    lbl: 'active days', color: '#67e8f9' },
+                            ].map(item => (
+                                <View key={item.lbl} style={styles.weeklySumItem}>
+                                    <Text style={{ fontSize: 22, fontFamily: FONTS.display, color: item.color, lineHeight: 26 }}>{item.val}</Text>
+                                    <Text style={[styles.weeklySumLbl, { color: C.textDim }]}>{item.lbl}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                </Animated.View>
+
+                {/* ─── Challenge Banner ─── */}
+                <Animated.View style={[
+                    styles.challengeBanner,
+                    { backgroundColor: C.primaryMuted, borderColor: C.primaryBorder },
+                    cardStyle(2),
+                ]}>
+                    <Ionicons name="trophy" size={16} color={C.primaryLight} />
+                    <Text style={[styles.challengeText, { color: C.primaryLight }]}>
+                        <Text style={{ fontFamily: FONTS.bodyBold }}>Today's Challenge: </Text>{challenge}
+                    </Text>
+                </Animated.View>
+
+                {/* ─── AQI Widget ─── */}
+                <Animated.View style={cardStyle(3)}>
+                    <AqiWidget aqi={aqi} city={aqiCity} loading={aqiLoading} C={C} />
+                </Animated.View>
+
+                {/* ─── Quick Actions ─── */}
+                <Animated.View style={cardStyle(4)}>
+                    <Text style={[styles.sectionLabel, { color: C.textMuted, marginBottom: 2 }]}>Quick Actions</Text>
+                    <View style={styles.quickActionsGrid}>
+                        {[
+                            { label: 'Analyze',    sub: 'Blood report',  icon: 'scan-circle',          color: '#f87171', bg: 'rgba(239,68,68,0.12)',    route: '/(tabs)/upload'  },
+                            { label: 'Fitness Hub',sub: 'Workouts',      icon: 'barbell',               color: '#a855f7', bg: 'rgba(168,85,247,0.12)',   route: '/fitness'        },
+                            { label: 'Meal Scan',  sub: 'AI nutrition',  icon: 'fast-food',             color: '#34d399', bg: 'rgba(16,185,129,0.12)',   route: '/meal-scan'      },
+                            { label: 'AI Chat',    sub: 'Ask your data', icon: 'chatbubbles',           color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',   route: '/ai-chat'        },
+                            { label: 'Reports',    sub: 'History',       icon: 'document-text',         color: '#67e8f9', bg: 'rgba(6,182,212,0.12)',    route: '/(tabs)/history' },
+                            { label: 'Calculators',sub: 'BMI & more',    icon: 'calculator',            color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',    route: '/calculators'    },
+                        ].map((a, i) => (
+                            <TouchableOpacity
+                                key={i}
+                                style={[styles.quickCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                                onPress={() => router.push(a.route as any)}
+                                activeOpacity={0.75}
+                            >
+                                <View style={[styles.quickIcon, { backgroundColor: a.bg }]}>
+                                    <Ionicons name={a.icon as any} size={24} color={a.color} />
+                                </View>
+                                <Text style={[styles.quickLabel, { color: C.textPrimary }]}>{a.label}</Text>
+                                <Text style={[styles.quickSub, { color: C.textDim }]}>{a.sub}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </Animated.View>
+
+                {/* ─── Step Count Card ─── */}
+                <Animated.View style={[
+                    styles.stepsCard,
+                    { backgroundColor: C.bgCard, borderColor: C.border },
+                    cardStyle(5),
+                ]}>
+                    <View style={styles.stepsCardHeader}>
+                        <Text style={[styles.stepsCardTitle, { color: C.textPrimary }]}>Today's Steps</Text>
+                        <TouchableOpacity
+                            style={[styles.goalBadge, { backgroundColor: C.inputBg }]}
+                            onPress={() => setGoalVisible(true)}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="flag" size={12} color={C.textMuted} />
+                            <Text style={[styles.goalBadgeText, { color: C.textMuted }]}>Goal: {stepGoal.toLocaleString()}</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.stepsBody}>
+                        <StepRing steps={steps} goal={stepGoal} size={132} C={C} />
+                        <View style={styles.statsList}>
+                            {[
+                                { icon: 'flame',     color: '#f87171', val: String(calories), lbl: 'kcal' },
+                                { icon: 'time',      color: '#67e8f9', val: String(activeMin), lbl: 'min' },
+                                { icon: 'map',       color: '#34d399', val: String(distanceKm), lbl: 'km' },
+                            ].map(s => (
+                                <View key={s.lbl} style={[styles.statItem, { backgroundColor: C.inputBg, borderColor: C.border }]}>
+                                    <Ionicons name={s.icon as any} size={16} color={s.color} />
+                                    <Text style={{ fontSize: 20, fontFamily: FONTS.display, color: C.textPrimary, lineHeight: 24 }}>{s.val}</Text>
+                                    <Text style={[styles.statLabel, { color: C.textDim }]}>{s.lbl}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+                    <View style={[styles.progressTrack, { backgroundColor: C.border }]}>
+                        <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: milestone.color }]} />
+                    </View>
+                    <Text style={[styles.milestoneText, { color: milestone.color }]}>
+                        {milestone.emoji} {milestone.label}
+                        {steps < stepGoal ? `  ·  ${(stepGoal - steps).toLocaleString()} to go` : '  ·  Goal achieved! 🎉'}
+                    </Text>
+
+                    {pedometerActive ? (
+                        <View style={[styles.logBtn, { backgroundColor: '#34d39922' }]}>
+                            <Ionicons name="checkmark-circle" size={18} color="#34d399" />
+                            <Text style={[styles.logBtnText, { color: '#34d399' }]}>Auto Tracking Active</Text>
+                        </View>
+                    ) : (
+                        <TouchableOpacity style={[styles.logBtn, { backgroundColor: C.primary }]} onPress={() => setLogVisible(true)} activeOpacity={0.85}>
+                            <Ionicons name="add-circle" size={18} color="#fff" />
+                            <Text style={styles.logBtnText}>Log Steps Manually</Text>
+                        </TouchableOpacity>
+                    )}
+                </Animated.View>
+
+                {/* ─── Habit Tracker ─── */}
+                <Animated.View style={[
+                    styles.habitCard,
+                    { backgroundColor: C.bgCard, borderColor: C.border },
+                    cardStyle(6),
+                ]}>
+                    <View style={styles.habitHeader}>
+                        <Text style={[styles.habitTitle, { color: C.textPrimary }]}>Daily Habits</Text>
+                        <View style={[styles.habitPct, {
+                            backgroundColor: habits.every(Boolean) ? '#10b98122' : C.inputBg,
+                        }]}>
+                            <Text style={{
+                                fontSize: 11, fontFamily: FONTS.bodyBold,
+                                color: habits.every(Boolean) ? '#10b981' : C.textDim,
+                            }}>
+                                {habits.filter(Boolean).length}/{HABITS.length} done
+                            </Text>
+                        </View>
+                    </View>
+                    <View style={styles.habitGrid}>
+                        {HABITS.map((h, i) => {
+                            const done = habits[i];
+                            return (
+                                <TouchableOpacity
+                                    key={i}
+                                    style={[styles.habitItem, {
+                                        backgroundColor: done ? '#10b98115' : C.inputBg,
+                                        borderColor: done ? '#10b98144' : C.border,
+                                    }]}
+                                    onPress={() => toggleHabit(i)}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={[styles.habitCheck, {
+                                        backgroundColor: done ? '#10b981' : 'transparent',
+                                        borderColor: done ? '#10b981' : C.textDim,
+                                    }]}>
+                                        {done && <Ionicons name="checkmark" size={12} color="#fff" />}
+                                    </View>
+                                    <Text style={{ fontSize: 20 }}>{h.emoji}</Text>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={[styles.habitItemLabel, { color: done ? '#10b981' : C.textPrimary }]}>{h.label}</Text>
+                                        <Text style={[styles.habitItemSub, { color: C.textDim }]}>{h.sub}</Text>
+                                    </View>
+                                    {done && <Ionicons name="checkmark-circle" size={18} color="#10b981" />}
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </Animated.View>
+
+                {/* ─── Weight Tracker + Report ─── */}
+                <Animated.View style={[{ gap: 14 }, cardStyle(7)]}>
+                    <TouchableOpacity
+                        style={[styles.featureBanner, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                        onPress={() => router.push('/weight-tracker' as any)}
+                        activeOpacity={0.85}
+                    >
+                        <View style={[styles.featureBannerIcon, { backgroundColor: 'rgba(168,85,247,0.12)' }]}>
+                            <Ionicons name="scale" size={24} color="#a855f7" />
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.noReportTitle, { color: C.textPrimary }]}>No blood reports yet</Text>
-                            <Text style={[styles.noReportSub, { color: C.textDim }]}>Scan your first report to see insights here</Text>
+                            <Text style={[styles.featureBannerTitle, { color: C.textPrimary }]}>Weight Tracker</Text>
+                            <Text style={[styles.featureBannerSub, { color: C.textDim }]}>Log weight · Track trend · Recalculate BMI</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={16} color={C.textDim} />
                     </TouchableOpacity>
-                )}
-            </Animated.View>
 
-            {/* ─── Weekly Activity Chart ─── */}
-            <Animated.View style={cardStyle(8)}>
-                <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Activity</Text>
-                <WeeklyChart weeklySteps={weeklySteps} C={C} />
-            </Animated.View>
+                    {reportLoading ? (
+                        <View style={[styles.skeletonReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+                            <View style={{ flex: 1, gap: 10 }}>
+                                <View style={styles.skeletonRow}>
+                                    <SkeletonLoader width={14} height={14} borderRadius={4} />
+                                    <SkeletonLoader width="40%" height={11} />
+                                </View>
+                                <SkeletonLoader width="70%" height={16} />
+                                <SkeletonLoader width="50%" height={11} />
+                                <SkeletonLoader width={80} height={24} borderRadius={10} />
+                            </View>
+                            <View style={{ alignItems: 'center', gap: 6 }}>
+                                <SkeletonLoader width={48} height={36} borderRadius={8} />
+                                <SkeletonLoader width={24} height={11} />
+                            </View>
+                        </View>
+                    ) : latestReport ? (
+                        <>
+                            <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Blood Report</Text>
+                            <LatestReportCard report={latestReport} C={C} onPress={() => router.push(`/results/${latestReport.id}`)} />
+                        </>
+                    ) : (
+                        <TouchableOpacity
+                            style={[styles.noReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                            onPress={() => router.push('/(tabs)/upload')}
+                            activeOpacity={0.8}
+                        >
+                            <View style={[styles.noReportIcon, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                                <Ionicons name="scan-circle" size={24} color="#f87171" />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.noReportTitle, { color: C.textPrimary }]}>No blood reports yet</Text>
+                                <Text style={[styles.noReportSub, { color: C.textDim }]}>Scan your first report to see insights here</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color={C.textDim} />
+                        </TouchableOpacity>
+                    )}
+                </Animated.View>
 
-            {/* ─── Today's Tip ─── */}
-            <View style={[styles.tipCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-                <View style={styles.tipHeader}>
-                    <View style={[styles.tipIcon, { backgroundColor: C.primaryMuted }]}>
-                        <Text style={{ fontSize: 18 }}>{todayTip.emoji}</Text>
+                {/* ─── Weekly Activity Chart ─── */}
+                <Animated.View style={cardStyle(8)}>
+                    <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Activity</Text>
+                    <WeeklyChart weeklySteps={weeklySteps} C={C} />
+                </Animated.View>
+
+                {/* ─── Today's Tip ─── */}
+                <View style={[styles.tipCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+                    <View style={styles.tipHeader}>
+                        <View style={[styles.tipIcon, { backgroundColor: C.primaryMuted }]}>
+                            <Text style={{ fontSize: 20 }}>{todayTip.emoji}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.tipLabel, { color: C.textDim }]}>Today's Health Tip</Text>
+                            <Text style={[styles.tipTitle, { color: C.textPrimary }]}>{todayTip.title}</Text>
+                        </View>
                     </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.tipLabel, { color: C.textDim }]}>Today's Health Tip</Text>
-                        <Text style={[styles.tipTitle, { color: C.textPrimary }]}>{todayTip.title}</Text>
-                    </View>
+                    <Text style={[styles.tipBody, { color: C.textSecondary }]}>{todayTip.body}</Text>
                 </View>
-                <Text style={[styles.tipBody, { color: C.textSecondary }]}>{todayTip.body}</Text>
-            </View>
 
-            <Text style={[styles.footer, { color: C.textDim }]}>BloodAI · Stay fit. Stay healthy.</Text>
+                <Text style={[styles.footer, { color: C.textDim }]}>BloodAI · Stay fit. Stay healthy.</Text>
 
-            {/* ─── Modals ─── */}
-            <LogStepsModal visible={logVisible} currentSteps={steps} onSave={saveSteps} onClose={() => setLogVisible(false)} C={C} />
-            <SetGoalModal visible={goalVisible} currentGoal={stepGoal} onSave={saveStepGoal} onClose={() => setGoalVisible(false)} C={C} />
-        </ScrollView>
+                {/* ─── Modals ─── */}
+                <LogStepsModal visible={logVisible} currentSteps={steps} onSave={saveSteps} onClose={() => setLogVisible(false)} C={C} />
+                <SetGoalModal visible={goalVisible} currentGoal={stepGoal} onSave={saveStepGoal} onClose={() => setGoalVisible(false)} C={C} />
+            </ScrollView>
+
+            {/* ─── Full-screen Confetti overlay ─── */}
+            <Confetti active={confettiActive} onDone={() => { setConfettiActive(false); setConfettiMsg(''); }} />
+        </View>
     );
 }
 
@@ -969,147 +1030,148 @@ const styles = StyleSheet.create({
 
     // Header
     header:            { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    greeting:          { fontSize: 13, fontWeight: '600', marginBottom: 2 },
-    userName:          { fontSize: 26, fontWeight: '900' },
-    dateText:          { fontSize: 12, marginTop: 2 },
-    headerAvatar:      { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-    headerAvatarText:  { color: '#fff', fontSize: 18, fontWeight: '800' },
+    greeting:          { fontSize: 13, fontFamily: FONTS.body, marginBottom: 2 },
+    userName:          { fontSize: 30, fontFamily: FONTS.title },
+    dateText:          { fontSize: 12, fontFamily: FONTS.body, marginTop: 2 },
+    headerAvatar:      { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+    headerAvatarText:  { color: '#fff', fontSize: 20, fontFamily: FONTS.title },
+
+    // Achievement badge
+    achieveBadge: {
+        alignSelf: 'center', borderRadius: 24, paddingHorizontal: 20, paddingVertical: 10,
+        backgroundColor: 'rgba(16,185,129,0.18)', borderWidth: 1, borderColor: 'rgba(16,185,129,0.4)',
+    },
+    achieveText: { fontSize: 16, fontFamily: FONTS.title, color: '#34d399' },
 
     // Health Score
     healthScoreCard:   { borderRadius: 26, padding: 20, borderWidth: 1, gap: 16 },
     healthScoreHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    healthScoreTitle:  { fontSize: 18, fontWeight: '900' },
-    healthScoreSub:    { fontSize: 11, marginTop: 2 },
+    healthScoreTitle:  { fontSize: 20, fontFamily: FONTS.title },
+    healthScoreSub:    { fontSize: 11, fontFamily: FONTS.body, marginTop: 2 },
     healthScoreInfoBtn:{ width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
     healthScoreBody:   { flexDirection: 'row', alignItems: 'center', gap: 20 },
     healthScorePillars:{ flex: 1, gap: 8 },
     pillarRow:         { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, padding: 8, borderWidth: 1 },
-    pillarLabel:       { flex: 1, fontSize: 12, fontWeight: '600' },
-    pillarVal:         { fontSize: 12, fontWeight: '800' },
+    pillarLabel:       { flex: 1, fontSize: 12, fontFamily: FONTS.body },
+    pillarVal:         { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     // Streak + Weekly Summary row
     streakRow:     { flexDirection: 'row', gap: 12 },
     streakCard:    { flex: 1, borderRadius: 20, padding: 16, borderWidth: 1, alignItems: 'center', gap: 4 },
-    streakNum:     { fontSize: 36, fontWeight: '900' },
-    streakLabel:   { fontSize: 12, fontWeight: '700' },
-    streakBest:    { fontSize: 10 },
+    streakLabel:   { fontSize: 12, fontFamily: FONTS.bodyBold },
+    streakBest:    { fontSize: 10, fontFamily: FONTS.body },
     weeklySumCard:  { flex: 2, borderRadius: 20, padding: 16, borderWidth: 1, gap: 10 },
-    weeklySumTitle: { fontSize: 14, fontWeight: '800' },
+    weeklySumTitle: { fontSize: 16, fontFamily: FONTS.title },
     weeklySumGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    weeklySumItem:  { width: '45%' },
-    weeklySumVal:   { fontSize: 18, fontWeight: '900' },
-    weeklySumLbl:   { fontSize: 10 },
+    weeklySumItem:  { width: '45%', gap: 2 },
+    weeklySumLbl:   { fontSize: 10, fontFamily: FONTS.body },
 
     // Challenge banner
-    challengeBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, padding: 12, borderWidth: 1 },
-    challengeText:   { flex: 1, fontSize: 13, lineHeight: 18 },
+    challengeBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, padding: 12, borderWidth: 1 },
+    challengeText:   { flex: 1, fontSize: 13, fontFamily: FONTS.body, lineHeight: 18 },
 
     // AQI
     aqiCard:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 16, padding: 12, borderWidth: 1 },
     aqiLeft:    { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    aqiCity:    { fontSize: 11, marginBottom: 2 },
-    aqiLabel:   { fontSize: 13, fontWeight: '700' },
-    aqiLoading: { fontSize: 12, marginLeft: 8 },
+    aqiCity:    { fontSize: 11, fontFamily: FONTS.body, marginBottom: 2 },
+    aqiLabel:   { fontSize: 13, fontFamily: FONTS.bodyBold },
     aqiBadge:   { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, alignItems: 'center' },
-    aqiNum:     { fontSize: 20, fontWeight: '900' },
-    aqiUnit:    { fontSize: 9, fontWeight: '700' },
+    aqiUnit:    { fontSize: 9, fontFamily: FONTS.bodyBold },
 
     // Quick actions
-    sectionLabel:    { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
+    sectionLabel:    { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.8 },
     quickActionsGrid:{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 },
     quickCard:       { width: '30.5%', borderRadius: 18, padding: 14, borderWidth: 1, alignItems: 'center', gap: 6 },
-    quickIcon:       { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    quickLabel:      { fontSize: 12, fontWeight: '700', textAlign: 'center' },
-    quickSub:        { fontSize: 9, textAlign: 'center' },
+    quickIcon:       { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    quickLabel:      { fontSize: 12, fontFamily: FONTS.bodyBold, textAlign: 'center' },
+    quickSub:        { fontSize: 9, fontFamily: FONTS.body, textAlign: 'center' },
 
     // Steps card
     stepsCard:       { borderRadius: 26, padding: 20, borderWidth: 1, gap: 14 },
     stepsCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    stepsCardTitle:  { fontSize: 17, fontWeight: '800' },
+    stepsCardTitle:  { fontSize: 18, fontFamily: FONTS.title },
     goalBadge:       { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
-    goalBadgeText:   { fontSize: 11, fontWeight: '600' },
+    goalBadgeText:   { fontSize: 11, fontFamily: FONTS.body },
     stepsBody:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
     statsList:       { flex: 1, gap: 10 },
     statItem:        { borderRadius: 14, padding: 10, borderWidth: 1, alignItems: 'center', gap: 2 },
-    statValue:       { fontSize: 17, fontWeight: '900' },
-    statLabel:       { fontSize: 10, fontWeight: '600' },
+    statLabel:       { fontSize: 10, fontFamily: FONTS.body },
     progressTrack:   { height: 8, borderRadius: 4, overflow: 'hidden' },
     progressFill:    { height: 8, borderRadius: 4 },
-    milestoneText:   { fontSize: 13, fontWeight: '700' },
+    milestoneText:   { fontSize: 13, fontFamily: FONTS.bodyBold },
     logBtn:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, paddingVertical: 12 },
-    logBtnText:      { color: '#fff', fontSize: 15, fontWeight: '700' },
+    logBtnText:      { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
 
     // Habit tracker
     habitCard:      { borderRadius: 24, padding: 18, borderWidth: 1, gap: 14 },
     habitHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    habitTitle:     { fontSize: 17, fontWeight: '800' },
+    habitTitle:     { fontSize: 18, fontFamily: FONTS.title },
     habitPct:       { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
     habitGrid:      { gap: 10 },
     habitItem:      { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 12, borderWidth: 1 },
     habitCheck:     { width: 22, height: 22, borderRadius: 6, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-    habitItemLabel: { fontSize: 14, fontWeight: '700' },
-    habitItemSub:   { fontSize: 11, marginTop: 1 },
+    habitItemLabel: { fontSize: 14, fontFamily: FONTS.bodyBold },
+    habitItemSub:   { fontSize: 11, fontFamily: FONTS.body, marginTop: 1 },
 
     // Feature banners
     featureBanner:      { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, padding: 14, borderWidth: 1 },
     featureBannerIcon:  { width: 46, height: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    featureBannerTitle: { fontSize: 15, fontWeight: '800', marginBottom: 2 },
-    featureBannerSub:   { fontSize: 12 },
+    featureBannerTitle: { fontSize: 15, fontFamily: FONTS.bodyBold, marginBottom: 2 },
+    featureBannerSub:   { fontSize: 12, fontFamily: FONTS.body },
 
     // Skeleton report loading
-    skeletonReportCard: { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 14 },
+    skeletonReportCard: { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 },
     skeletonRow:        { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
     // Report card
     reportCard:      { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center' },
     reportCardLeft:  { flex: 1, gap: 4 },
     reportCardHeader:{ flexDirection: 'row', alignItems: 'center', gap: 6 },
-    reportCardLabel: { fontSize: 11, fontWeight: '600' },
-    reportCardName:  { fontSize: 15, fontWeight: '800' },
-    reportCardDate:  { fontSize: 11 },
+    reportCardLabel: { fontSize: 11, fontFamily: FONTS.body },
+    reportCardName:  { fontSize: 15, fontFamily: FONTS.bodyBold },
+    reportCardDate:  { fontSize: 11, fontFamily: FONTS.body },
     riskBadge:       { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, alignSelf: 'flex-start' },
     riskDot:         { width: 6, height: 6, borderRadius: 3 },
-    riskText:        { fontSize: 11, fontWeight: '700' },
+    riskText:        { fontSize: 11, fontFamily: FONTS.bodyBold },
     reportCardRight: { alignItems: 'center' },
-    reportScore:     { fontSize: 32, fontWeight: '900' },
-    reportScoreLabel:{ fontSize: 12, fontWeight: '600' },
+    reportScoreLabel:{ fontSize: 12, fontFamily: FONTS.body },
     noReportCard:    { borderRadius: 18, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
     noReportIcon:    { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    noReportTitle:   { fontSize: 14, fontWeight: '700', marginBottom: 3 },
-    noReportSub:     { fontSize: 12 },
+    noReportTitle:   { fontSize: 14, fontFamily: FONTS.bodyBold, marginBottom: 3 },
+    noReportSub:     { fontSize: 12, fontFamily: FONTS.body },
 
     // Chart
     chartCard:    { borderRadius: 20, padding: 16, borderWidth: 1 },
-    cardTitle:    { fontSize: 15, fontWeight: '700', marginBottom: 14 },
+    cardTitle:    { fontSize: 16, fontFamily: FONTS.title, marginBottom: 14 },
     chartBars:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 90 },
     chartBarCol:  { flex: 1, alignItems: 'center', gap: 4 },
     chartBar:     { width: '60%', borderRadius: 4, minHeight: 4 },
-    chartSteps:   { fontSize: 8, fontWeight: '600' },
-    chartDay:     { fontSize: 11 },
+    chartSteps:   { fontSize: 8, fontFamily: FONTS.body },
+    chartDay:     { fontSize: 11, fontFamily: FONTS.bodyBold },
 
     // Tip card
     tipCard:   { borderRadius: 20, padding: 16, borderWidth: 1, gap: 10 },
     tipHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
     tipIcon:   { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    tipLabel:  { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-    tipTitle:  { fontSize: 14, fontWeight: '800' },
-    tipBody:   { fontSize: 13, lineHeight: 20 },
+    tipLabel:  { fontSize: 10, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
+    tipTitle:  { fontSize: 15, fontFamily: FONTS.title },
+    tipBody:   { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
 
     // Modals
     modalOverlay:    { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
     logModal:        { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, borderWidth: 1, borderBottomWidth: 0, gap: 16 },
     modalHandle:     { width: 40, height: 4, borderRadius: 2, alignSelf: 'center' },
-    logTitle:        { fontSize: 20, fontWeight: '900', textAlign: 'center' },
-    logSubtitle:     { fontSize: 13, textAlign: 'center' },
+    logTitle:        { fontSize: 22, fontFamily: FONTS.title, textAlign: 'center' },
+    logSubtitle:     { fontSize: 13, fontFamily: FONTS.body, textAlign: 'center' },
     adjustRow:       { flexDirection: 'row', alignItems: 'center', gap: 12 },
     adjustBtn:       { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    stepsInput:      { flex: 1, height: 56, borderWidth: 2, borderRadius: 16, fontSize: 24, fontWeight: '900' },
+    stepsInput:      { flex: 1, height: 56, borderWidth: 2, borderRadius: 16 },
     quickSteps:      { flexDirection: 'row', gap: 8, justifyContent: 'center' },
     quickBtn:        { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1 },
-    quickBtnText:    { fontSize: 13, fontWeight: '700' },
+    quickBtnText:    { fontSize: 14, fontFamily: FONTS.bodyBold },
     saveStepsBtn:    { borderRadius: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-    saveStepsBtnText:{ color: '#fff', fontSize: 16, fontWeight: '700' },
-    stepNote:        { fontSize: 11, textAlign: 'center', lineHeight: 16 },
+    saveStepsBtnText:{ color: '#fff', fontSize: 16, fontFamily: FONTS.bodyBold },
+    stepNote:        { fontSize: 11, fontFamily: FONTS.body, textAlign: 'center', lineHeight: 16 },
 
-    footer: { textAlign: 'center', fontSize: 11 },
+    footer: { textAlign: 'center', fontSize: 11, fontFamily: FONTS.body },
 });
