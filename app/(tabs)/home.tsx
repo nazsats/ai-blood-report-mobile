@@ -46,8 +46,33 @@ const HABITS = [
     { label: 'Take Vitamins', emoji: '💊', sub: 'Daily' },
 ];
 
+/* ─── Skeleton Loader ─── */
+function SkeletonLoader({ width, height, borderRadius = 10, style }: {
+    width?: number | string; height: number; borderRadius?: number; style?: any;
+}) {
+    const pulse = useRef(new Animated.Value(0.35)).current;
+    useEffect(() => {
+        const loop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulse, { toValue: 1, duration: 750, useNativeDriver: true }),
+                Animated.timing(pulse, { toValue: 0.35, duration: 750, useNativeDriver: true }),
+            ]),
+        );
+        loop.start();
+        return () => loop.stop();
+    }, []);
+    return (
+        <Animated.View style={[
+            { height, borderRadius, backgroundColor: 'rgba(255,255,255,0.07)' },
+            width !== undefined ? { width } : { width: '100%' },
+            { opacity: pulse },
+            style,
+        ]} />
+    );
+}
+
 /* ─── Health Score Ring ─── */
-function HealthScoreRing({ score, size, C }: { score: number; size: number; C: any }) {
+function HealthScoreRing({ score, size }: { score: number; size: number; C?: any }) {
     const anim = useRef(new Animated.Value(0)).current;
     useEffect(() => {
         Animated.timing(anim, { toValue: score / 100, duration: 1200, useNativeDriver: false }).start();
@@ -61,12 +86,10 @@ function HealthScoreRing({ score, size, C }: { score: number; size: number; C: a
     return (
         <View style={{ alignItems: 'center', gap: 6 }}>
             <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-                {/* Track */}
                 <View style={{
                     position: 'absolute', width: size, height: size, borderRadius: size / 2,
                     borderWidth: strokeW, borderColor: 'rgba(255,255,255,0.08)',
                 }} />
-                {/* Progress arc */}
                 {progress > 0 && (
                     <View style={{
                         position: 'absolute', width: size, height: size, borderRadius: size / 2,
@@ -79,12 +102,8 @@ function HealthScoreRing({ score, size, C }: { score: number; size: number; C: a
                     }} />
                 )}
                 <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 36, fontWeight: '900', color }}>
-                        {Math.round(score)}
-                    </Text>
-                    <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>
-                        / 100
-                    </Text>
+                    <Text style={{ fontSize: 36, fontWeight: '900', color }}>{Math.round(score)}</Text>
+                    <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>/ 100</Text>
                 </View>
             </View>
             <View style={{
@@ -124,9 +143,7 @@ function StepRing({ steps, goal, size, C }: { steps: number; goal: number; size:
                 }} />
             )}
             <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 26, fontWeight: '900', color: C.textPrimary }}>
-                    {steps.toLocaleString()}
-                </Text>
+                <Text style={{ fontSize: 26, fontWeight: '900', color: C.textPrimary }}>{steps.toLocaleString()}</Text>
                 <Text style={{ fontSize: 10, color: C.textDim, fontWeight: '600' }}>steps</Text>
                 <Text style={{ fontSize: 13, marginTop: 2 }}>{milestone.emoji}</Text>
             </View>
@@ -320,9 +337,13 @@ function getAqiLevel(aqi: number) {
 }
 function AqiWidget({ aqi, city, loading, C }: { aqi: number | null; city: string; loading: boolean; C: any }) {
     if (loading) return (
-        <View style={[styles.aqiCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-            <ActivityIndicator size="small" color={C.primaryLight} />
-            <Text style={[styles.aqiLoading, { color: C.textDim }]}>Fetching air quality...</Text>
+        <View style={[styles.aqiCard, { backgroundColor: C.bgCard, borderColor: C.border, gap: 12 }]}>
+            <SkeletonLoader width={24} height={24} borderRadius={12} />
+            <View style={{ flex: 1, gap: 6 }}>
+                <SkeletonLoader width="60%" height={11} />
+                <SkeletonLoader width="40%" height={13} />
+            </View>
+            <SkeletonLoader width={52} height={44} borderRadius={12} />
         </View>
     );
     if (aqi === null) return null;
@@ -352,7 +373,6 @@ export default function DashboardScreen() {
     const C        = useColors();
     const router   = useRouter();
 
-    // Step tracking
     const [steps, setSteps]             = useState(0);
     const [stepGoal, setStepGoal]       = useState(DEFAULT_STEP_GOAL);
     const [pedometerActive, setPedometerActive] = useState(false);
@@ -363,37 +383,34 @@ export default function DashboardScreen() {
     const [bestStreak, setBestStreak]   = useState(0);
     const [userHeight, setUserHeight]   = useState<number | null>(null);
 
-    // Blood report
     const [latestReport, setLatestReport]     = useState<any>(null);
     const [reportLoading, setReportLoading]   = useState(true);
 
-    // Habits
     const [habits, setHabits] = useState<boolean[]>([false, false, false, false]);
-
-    // Meal tracking
     const [mealLoggedToday, setMealLoggedToday] = useState(false);
-
-    // Health Score (0–100)
     const [healthScore, setHealthScore] = useState(0);
 
-    // AQI
     const [aqi, setAqi]               = useState<number | null>(null);
     const [aqiCity, setAqiCity]       = useState('');
     const [aqiLoading, setAqiLoading] = useState(false);
 
-    // User
     const [userName, setUserName] = useState('');
 
     const enterAnim    = useRef(new Animated.Value(0)).current;
+    // Staggered card animations: [healthScore, streak, challenge, aqi, quickActions, steps, habits, report, chart]
+    const cardAnims    = useRef(Array.from({ length: 9 }, () => new Animated.Value(0))).current;
     const stepInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const tipIdx   = new Date().getDate() % FITNESS_TIPS.length;
     const todayTip = FITNESS_TIPS[tipIdx];
     const challenge = DAILY_CHALLENGES[new Date().getDate() % DAILY_CHALLENGES.length];
 
-    // ── Init ──────────────────────────────────────────────────────────────
     useEffect(() => {
         Animated.spring(enterAnim, { toValue: 1, friction: 7, tension: 40, useNativeDriver: true }).start();
+        // Stagger cards in with 70ms delay between each
+        Animated.stagger(70, cardAnims.map(a =>
+            Animated.spring(a, { toValue: 1, friction: 9, tension: 55, useNativeDriver: true }),
+        )).start();
         loadStepGoal();
         initSteps();
         fetchAQI();
@@ -410,12 +427,10 @@ export default function DashboardScreen() {
         }
     }, [user]);
 
-    // Recompute health score whenever inputs change
     useEffect(() => {
         computeHealthScore();
     }, [steps, stepGoal, habits, latestReport, mealLoggedToday]);
 
-    // ── Health Score ──────────────────────────────────────────────────────
     const computeHealthScore = () => {
         const stepsScore   = Math.min(steps / stepGoal, 1) * 25;
         const habitsScore  = (habits.filter(Boolean).length / HABITS.length) * 25;
@@ -424,7 +439,6 @@ export default function DashboardScreen() {
         setHealthScore(Math.round(stepsScore + habitsScore + reportScore + mealScore));
     };
 
-    // ── Step Goal ─────────────────────────────────────────────────────────
     const loadStepGoal = async () => {
         const saved = await AsyncStorage.getItem(STEP_GOAL_KEY);
         if (saved) setStepGoal(parseInt(saved, 10));
@@ -435,7 +449,6 @@ export default function DashboardScreen() {
         await AsyncStorage.setItem(STEP_GOAL_KEY, String(goal));
     };
 
-    // ── Habits ────────────────────────────────────────────────────────────
     const loadHabits = async () => {
         const saved = await AsyncStorage.getItem(HABIT_KEY());
         if (saved) {
@@ -450,7 +463,6 @@ export default function DashboardScreen() {
         await AsyncStorage.setItem(HABIT_KEY(), JSON.stringify(next));
     };
 
-    // ── Streak ────────────────────────────────────────────────────────────
     const computeStreak = async (goal: number) => {
         let current = 0;
         const today = new Date();
@@ -461,7 +473,7 @@ export default function DashboardScreen() {
             if (s >= goal) {
                 current++;
             } else if (i > 0) {
-                break; // streak broken
+                break;
             }
         }
         const savedBest = await AsyncStorage.getItem(BEST_STREAK_KEY);
@@ -473,7 +485,6 @@ export default function DashboardScreen() {
         setBestStreak(best);
     };
 
-    // ── Pedometer ─────────────────────────────────────────────────────────
     const getPedometerSteps = async (): Promise<number | null> => {
         if (!Pedometer) return null;
         try {
@@ -526,7 +537,6 @@ export default function DashboardScreen() {
         setWeeklySteps(shifted.length === 7 ? shifted : weekly);
     };
 
-    // ── AQI ───────────────────────────────────────────────────────────────
     const fetchAQI = async () => {
         if (!Location) return;
         setAqiLoading(true);
@@ -550,7 +560,6 @@ export default function DashboardScreen() {
         finally { setAqiLoading(false); }
     };
 
-    // ── Firebase ──────────────────────────────────────────────────────────
     const loadLatestReport = async () => {
         if (!user) return;
         try {
@@ -593,7 +602,6 @@ export default function DashboardScreen() {
         computeStreak(stepGoal);
     };
 
-    // ── Computed values ───────────────────────────────────────────────────
     const progress   = Math.min(steps / stepGoal, 1);
     const milestone  = getStepMilestone(steps);
     const calories   = estimateCalories(steps);
@@ -607,6 +615,14 @@ export default function DashboardScreen() {
         activeDays:    weeklySteps.filter(s => s >= stepGoal).length,
         totalKm:       parseFloat((weeklySteps.reduce((a, b) => a + (b * strideM) / 1000, 0)).toFixed(1)),
     };
+
+    // Helper to build animated card style
+    const cardStyle = (idx: number) => ({
+        opacity: cardAnims[idx],
+        transform: [{
+            translateY: cardAnims[idx].interpolate({ inputRange: [0, 1], outputRange: [24, 0] }),
+        }],
+    });
 
     return (
         <ScrollView
@@ -637,7 +653,7 @@ export default function DashboardScreen() {
             <Animated.View style={[
                 styles.healthScoreCard,
                 { backgroundColor: C.bgCard, borderColor: C.border },
-                { opacity: enterAnim, transform: [{ scale: enterAnim.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) }] },
+                cardStyle(0),
             ]}>
                 <View style={styles.healthScoreHeader}>
                     <View>
@@ -675,18 +691,13 @@ export default function DashboardScreen() {
             </Animated.View>
 
             {/* ─── Streak + Weekly Summary ─── */}
-            <View style={styles.streakRow}>
-                {/* Streak card */}
+            <Animated.View style={[styles.streakRow, cardStyle(1)]}>
                 <View style={[styles.streakCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
                     <Text style={{ fontSize: 28 }}>{streak > 0 ? '🔥' : '💤'}</Text>
-                    <Text style={[styles.streakNum, { color: streak > 0 ? '#f97316' : C.textDim }]}>
-                        {streak}
-                    </Text>
+                    <Text style={[styles.streakNum, { color: streak > 0 ? '#f97316' : C.textDim }]}>{streak}</Text>
                     <Text style={[styles.streakLabel, { color: C.textDim }]}>Day Streak</Text>
                     <Text style={[styles.streakBest, { color: C.textDim }]}>Best: {bestStreak}</Text>
                 </View>
-
-                {/* Weekly summary */}
                 <View style={[styles.weeklySumCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
                     <Text style={[styles.weeklySumTitle, { color: C.textPrimary }]}>This Week</Text>
                     <View style={styles.weeklySumGrid}>
@@ -710,26 +721,63 @@ export default function DashboardScreen() {
                         </View>
                     </View>
                 </View>
-            </View>
+            </Animated.View>
 
             {/* ─── Challenge Banner ─── */}
-            <View style={[styles.challengeBanner, { backgroundColor: C.primaryMuted, borderColor: C.primaryBorder }]}>
+            <Animated.View style={[
+                styles.challengeBanner,
+                { backgroundColor: C.primaryMuted, borderColor: C.primaryBorder },
+                cardStyle(2),
+            ]}>
                 <Ionicons name="trophy-outline" size={16} color={C.primaryLight} />
                 <Text style={[styles.challengeText, { color: C.primaryLight }]}>
                     <Text style={{ fontWeight: '800' }}>Today's Challenge: </Text>{challenge}
                 </Text>
-            </View>
+            </Animated.View>
 
             {/* ─── AQI Widget ─── */}
-            <AqiWidget aqi={aqi} city={aqiCity} loading={aqiLoading} C={C} />
+            <Animated.View style={cardStyle(3)}>
+                <AqiWidget aqi={aqi} city={aqiCity} loading={aqiLoading} C={C} />
+            </Animated.View>
+
+            {/* ─── Quick Actions (below AQI) ─── */}
+            <Animated.View style={cardStyle(4)}>
+                <Text style={[styles.sectionLabel, { color: C.textMuted, marginBottom: 2 }]}>Quick Actions</Text>
+                <View style={styles.quickActionsGrid}>
+                    {[
+                        { label: 'Analyze',    sub: 'Blood report', icon: 'scan',              color: '#f87171', bg: 'rgba(239,68,68,0.12)',    route: '/(tabs)/upload' },
+                        { label: 'Fitness Hub',sub: 'Workouts',     icon: 'barbell-outline',   color: '#a855f7', bg: 'rgba(168,85,247,0.12)',   route: '/fitness' },
+                        { label: 'Meal Scan',  sub: 'AI nutrition', icon: 'restaurant',        color: '#34d399', bg: 'rgba(16,185,129,0.12)',   route: '/meal-scan' },
+                        { label: 'AI Chat',    sub: 'Ask your data',icon: 'chatbubble-ellipses',color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',   route: '/ai-chat' },
+                        { label: 'Reports',    sub: 'History',      icon: 'document-text-outline', color: '#67e8f9', bg: 'rgba(6,182,212,0.12)',    route: '/(tabs)/history' },
+                        { label: 'Calculators',sub: 'BMI & more',   icon: 'calculator-outline',color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',    route: '/calculators' },
+                    ].map((a, i) => (
+                        <TouchableOpacity
+                            key={i}
+                            style={[styles.quickCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                            onPress={() => router.push(a.route as any)}
+                            activeOpacity={0.8}
+                        >
+                            <View style={[styles.quickIcon, { backgroundColor: a.bg }]}>
+                                <Ionicons name={a.icon as any} size={22} color={a.color} />
+                            </View>
+                            <Text style={[styles.quickLabel, { color: C.textPrimary }]}>{a.label}</Text>
+                            <Text style={[styles.quickSub, { color: C.textDim }]}>{a.sub}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </Animated.View>
 
             {/* ─── Step Count Card ─── */}
-            <View style={[styles.stepsCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+            <Animated.View style={[
+                styles.stepsCard,
+                { backgroundColor: C.bgCard, borderColor: C.border },
+                cardStyle(5),
+            ]}>
                 <View style={styles.stepsCardHeader}>
                     <Text style={[styles.stepsCardTitle, { color: C.textPrimary }]}>Today's Steps</Text>
                     <TouchableOpacity
                         style={[styles.goalBadge, { backgroundColor: C.inputBg }]}
-                        onLongPress={() => setGoalVisible(true)}
                         onPress={() => setGoalVisible(true)}
                         activeOpacity={0.7}
                     >
@@ -778,10 +826,14 @@ export default function DashboardScreen() {
                         <Text style={styles.logBtnText}>Log Steps Manually</Text>
                     </TouchableOpacity>
                 )}
-            </View>
+            </Animated.View>
 
             {/* ─── Habit Tracker ─── */}
-            <View style={[styles.habitCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+            <Animated.View style={[
+                styles.habitCard,
+                { backgroundColor: C.bgCard, borderColor: C.border },
+                cardStyle(6),
+            ]}>
                 <View style={styles.habitHeader}>
                     <Text style={[styles.habitTitle, { color: C.textPrimary }]}>Daily Habits</Text>
                     <View style={[styles.habitPct, {
@@ -823,81 +875,70 @@ export default function DashboardScreen() {
                         );
                     })}
                 </View>
-            </View>
-
-            {/* ─── Quick Actions (6 items, 2 rows) ─── */}
-            <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Quick Actions</Text>
-            <View style={styles.quickActionsGrid}>
-                {[
-                    { label: 'Analyze',    sub: 'Blood report', icon: 'scan',              color: '#f87171', bg: 'rgba(239,68,68,0.12)',    route: '/(tabs)/upload' },
-                    { label: 'Fitness Hub',sub: 'Workouts',     icon: 'barbell-outline',   color: '#a855f7', bg: 'rgba(168,85,247,0.12)',   route: '/fitness' },
-                    { label: 'Meal Scan',  sub: 'AI nutrition', icon: 'restaurant',        color: '#34d399', bg: 'rgba(16,185,129,0.12)',   route: '/meal-scan' },
-                    { label: 'AI Chat',    sub: 'Ask your data',icon: 'chatbubble-ellipses',color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',   route: '/ai-chat' },
-                    { label: 'Reports',    sub: 'History',      icon: 'document-text-outline', color: '#67e8f9', bg: 'rgba(6,182,212,0.12)',    route: '/(tabs)/history' },
-                    { label: 'Calculators',sub: 'BMI & more',   icon: 'calculator-outline',color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',    route: '/calculators' },
-                ].map((a, i) => (
-                    <TouchableOpacity
-                        key={i}
-                        style={[styles.quickCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
-                        onPress={() => router.push(a.route as any)}
-                        activeOpacity={0.8}
-                    >
-                        <View style={[styles.quickIcon, { backgroundColor: a.bg }]}>
-                            <Ionicons name={a.icon as any} size={22} color={a.color} />
-                        </View>
-                        <Text style={[styles.quickLabel, { color: C.textPrimary }]}>{a.label}</Text>
-                        <Text style={[styles.quickSub, { color: C.textDim }]}>{a.sub}</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            </Animated.View>
 
             {/* ─── Weight Tracker Banner ─── */}
-            <TouchableOpacity
-                style={[styles.featureBanner, { backgroundColor: C.bgCard, borderColor: C.border }]}
-                onPress={() => router.push('/weight-tracker' as any)}
-                activeOpacity={0.85}
-            >
-                <View style={[styles.featureBannerIcon, { backgroundColor: 'rgba(168,85,247,0.12)' }]}>
-                    <Ionicons name="scale-outline" size={24} color="#a855f7" />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Text style={[styles.featureBannerTitle, { color: C.textPrimary }]}>Weight Tracker</Text>
-                    <Text style={[styles.featureBannerSub, { color: C.textDim }]}>Log weight · Track trend · Recalculate BMI</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={C.textDim} />
-            </TouchableOpacity>
-
-            {/* ─── Latest Blood Report ─── */}
-            {reportLoading ? (
-                <View style={[styles.reportLoadingCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-                    <ActivityIndicator size="small" color={C.primaryLight} />
-                    <Text style={[styles.reportLoadingText, { color: C.textDim }]}>Loading latest report...</Text>
-                </View>
-            ) : latestReport ? (
-                <>
-                    <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Blood Report</Text>
-                    <LatestReportCard report={latestReport} C={C} onPress={() => router.push(`/results/${latestReport.id}`)} />
-                </>
-            ) : (
+            <Animated.View style={cardStyle(7)}>
                 <TouchableOpacity
-                    style={[styles.noReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
-                    onPress={() => router.push('/(tabs)/upload')}
-                    activeOpacity={0.8}
+                    style={[styles.featureBanner, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                    onPress={() => router.push('/weight-tracker' as any)}
+                    activeOpacity={0.85}
                 >
-                    <View style={[styles.noReportIcon, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
-                        <Ionicons name="scan" size={24} color="#f87171" />
+                    <View style={[styles.featureBannerIcon, { backgroundColor: 'rgba(168,85,247,0.12)' }]}>
+                        <Ionicons name="scale-outline" size={24} color="#a855f7" />
                     </View>
                     <View style={{ flex: 1 }}>
-                        <Text style={[styles.noReportTitle, { color: C.textPrimary }]}>No blood reports yet</Text>
-                        <Text style={[styles.noReportSub, { color: C.textDim }]}>Scan your first report to see insights here</Text>
+                        <Text style={[styles.featureBannerTitle, { color: C.textPrimary }]}>Weight Tracker</Text>
+                        <Text style={[styles.featureBannerSub, { color: C.textDim }]}>Log weight · Track trend · Recalculate BMI</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={16} color={C.textDim} />
                 </TouchableOpacity>
-            )}
+
+                {/* ─── Latest Blood Report ─── */}
+                {reportLoading ? (
+                    <View style={[styles.skeletonReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
+                        <View style={{ flex: 1, gap: 10 }}>
+                            <View style={styles.skeletonRow}>
+                                <SkeletonLoader width={14} height={14} borderRadius={4} />
+                                <SkeletonLoader width="40%" height={11} />
+                            </View>
+                            <SkeletonLoader width="70%" height={16} />
+                            <SkeletonLoader width="50%" height={11} />
+                            <SkeletonLoader width={80} height={24} borderRadius={10} />
+                        </View>
+                        <View style={{ alignItems: 'center', gap: 6 }}>
+                            <SkeletonLoader width={48} height={36} borderRadius={8} />
+                            <SkeletonLoader width={24} height={11} />
+                        </View>
+                    </View>
+                ) : latestReport ? (
+                    <>
+                        <Text style={[styles.sectionLabel, { color: C.textMuted, marginTop: 6 }]}>Blood Report</Text>
+                        <LatestReportCard report={latestReport} C={C} onPress={() => router.push(`/results/${latestReport.id}`)} />
+                    </>
+                ) : (
+                    <TouchableOpacity
+                        style={[styles.noReportCard, { backgroundColor: C.bgCard, borderColor: C.border }]}
+                        onPress={() => router.push('/(tabs)/upload')}
+                        activeOpacity={0.8}
+                    >
+                        <View style={[styles.noReportIcon, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                            <Ionicons name="scan" size={24} color="#f87171" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.noReportTitle, { color: C.textPrimary }]}>No blood reports yet</Text>
+                            <Text style={[styles.noReportSub, { color: C.textDim }]}>Scan your first report to see insights here</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={16} color={C.textDim} />
+                    </TouchableOpacity>
+                )}
+            </Animated.View>
 
             {/* ─── Weekly Activity Chart ─── */}
-            <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Activity</Text>
-            <WeeklyChart weeklySteps={weeklySteps} C={C} />
+            <Animated.View style={cardStyle(8)}>
+                <Text style={[styles.sectionLabel, { color: C.textMuted }]}>Activity</Text>
+                <WeeklyChart weeklySteps={weeklySteps} C={C} />
+            </Animated.View>
 
             {/* ─── Today's Tip ─── */}
             <View style={[styles.tipCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
@@ -913,9 +954,7 @@ export default function DashboardScreen() {
                 <Text style={[styles.tipBody, { color: C.textSecondary }]}>{todayTip.body}</Text>
             </View>
 
-            <Text style={[styles.footer, { color: C.textDim }]}>
-                BloodAI · Stay fit. Stay healthy.
-            </Text>
+            <Text style={[styles.footer, { color: C.textDim }]}>BloodAI · Stay fit. Stay healthy.</Text>
 
             {/* ─── Modals ─── */}
             <LogStepsModal visible={logVisible} currentSteps={steps} onSave={saveSteps} onClose={() => setLogVisible(false)} C={C} />
@@ -975,6 +1014,14 @@ const styles = StyleSheet.create({
     aqiNum:     { fontSize: 20, fontWeight: '900' },
     aqiUnit:    { fontSize: 9, fontWeight: '700' },
 
+    // Quick actions
+    sectionLabel:    { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
+    quickActionsGrid:{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 },
+    quickCard:       { width: '30.5%', borderRadius: 18, padding: 14, borderWidth: 1, alignItems: 'center', gap: 6 },
+    quickIcon:       { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    quickLabel:      { fontSize: 12, fontWeight: '700', textAlign: 'center' },
+    quickSub:        { fontSize: 9, textAlign: 'center' },
+
     // Steps card
     stepsCard:       { borderRadius: 26, padding: 20, borderWidth: 1, gap: 14 },
     stepsCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -1003,19 +1050,15 @@ const styles = StyleSheet.create({
     habitItemLabel: { fontSize: 14, fontWeight: '700' },
     habitItemSub:   { fontSize: 11, marginTop: 1 },
 
-    // Quick actions
-    sectionLabel:    { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
-    quickActionsGrid:{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-    quickCard:       { width: '30.5%', borderRadius: 18, padding: 14, borderWidth: 1, alignItems: 'center', gap: 6 },
-    quickIcon:       { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    quickLabel:      { fontSize: 12, fontWeight: '700', textAlign: 'center' },
-    quickSub:        { fontSize: 9, textAlign: 'center' },
-
     // Feature banners
     featureBanner:      { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, padding: 14, borderWidth: 1 },
     featureBannerIcon:  { width: 46, height: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
     featureBannerTitle: { fontSize: 15, fontWeight: '800', marginBottom: 2 },
     featureBannerSub:   { fontSize: 12 },
+
+    // Skeleton report loading
+    skeletonReportCard: { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 14 },
+    skeletonRow:        { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
     // Report card
     reportCard:      { borderRadius: 20, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center' },
@@ -1030,8 +1073,6 @@ const styles = StyleSheet.create({
     reportCardRight: { alignItems: 'center' },
     reportScore:     { fontSize: 32, fontWeight: '900' },
     reportScoreLabel:{ fontSize: 12, fontWeight: '600' },
-    reportLoadingCard: { borderRadius: 18, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'center' },
-    reportLoadingText: { fontSize: 13 },
     noReportCard:    { borderRadius: 18, padding: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
     noReportIcon:    { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
     noReportTitle:   { fontSize: 14, fontWeight: '700', marginBottom: 3 },
