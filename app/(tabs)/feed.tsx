@@ -19,6 +19,7 @@ import {
     HEALTH_POSTS, DAILY_FACTS, TRENDING_TOPICS,
     CATEGORY_COLORS, type HealthPost, type PostCategory,
 } from '../../lib/healthData';
+import { FONTS } from '../../constants/fonts';
 
 type FilterCategory = 'All' | PostCategory;
 const FILTER_CATEGORIES: FilterCategory[] = [
@@ -66,7 +67,7 @@ function PostCard({
         }).start();
     }, []);
 
-    const upAnim  = useRef(new Animated.Value(1)).current;
+    const upAnim   = useRef(new Animated.Value(1)).current;
     const downAnim = useRef(new Animated.Value(1)).current;
 
     const animateVote = (anim: Animated.Value) => {
@@ -279,7 +280,7 @@ function CommentModal({
 
 /* ─── Daily post rotation (deterministic shuffle by date) ─── */
 function getDailyPosts(): HealthPost[] {
-    const dateStr = new Date().toISOString().slice(0, 10); // 'yyyy-MM-dd'
+    const dateStr = new Date().toISOString().slice(0, 10);
     let seed = 0;
     for (const ch of dateStr) seed = (seed * 31 + ch.charCodeAt(0)) & 0xffffffff;
     const arr = [...HEALTH_POSTS];
@@ -288,7 +289,7 @@ function getDailyPosts(): HealthPost[] {
         const j = Math.abs(seed) % (i + 1);
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    return arr; // Full list, shuffled daily
+    return arr;
 }
 
 const DAILY_POSTS = getDailyPosts();
@@ -310,7 +311,6 @@ export default function FeedScreen() {
             setStatsLoading(false);
             return;
         }
-        // Load post stats
         const ids = HEALTH_POSTS.map(p => p.id);
         const statsMap: typeof postStats = {};
         const votesMap: typeof userVotes = {};
@@ -350,7 +350,6 @@ export default function FeedScreen() {
         const current  = userVotes[postId];
 
         if (current === dir) {
-            // Undo vote
             await deleteDoc(voteRef);
             await setDoc(statsRef, {
                 [dir === 'up' ? 'likes' : 'dislikes']: increment(-1),
@@ -364,7 +363,6 @@ export default function FeedScreen() {
                 },
             }));
         } else {
-            // New or switch vote
             const updates: any = { [dir === 'up' ? 'likes' : 'dislikes']: increment(1) };
             if (current) updates[current === 'up' ? 'likes' : 'dislikes'] = increment(-1);
             await setDoc(voteRef, { vote: dir, userId: user.uid, postId }, { merge: true });
@@ -408,7 +406,6 @@ export default function FeedScreen() {
                 contentContainerStyle={styles.listContent}
                 ListHeaderComponent={
                     <>
-                        {/* Suggestion / fact card */}
                         <SuggestionCard C={C} />
 
                         {/* Category filter */}
@@ -467,9 +464,7 @@ export default function FeedScreen() {
                             <Text style={[styles.feedCount, { color: C.textDim }]}>
                                 {filtered.length} article{filtered.length !== 1 ? 's' : ''} · Updated daily
                             </Text>
-                            {statsLoading && (
-                                <ActivityIndicator size="small" color={C.primaryLight} />
-                            )}
+                            {statsLoading && <ActivityIndicator size="small" color={C.primaryLight} />}
                         </View>
                     </>
                 }
@@ -511,68 +506,68 @@ const styles = StyleSheet.create({
     listContent: { paddingHorizontal: 16, paddingBottom: 40, gap: 12 },
 
     header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 56, paddingBottom: 16, borderBottomWidth: 1 },
-    headerLabel: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
-    headerTitle: { fontSize: 28, fontWeight: '900' },
+    headerLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, marginBottom: 2 },
+    headerTitle: { fontSize: 28, fontFamily: FONTS.title },
     headerBadge: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 
     // Suggestion card
-    suggCard:    { borderRadius: 18, padding: 14, borderWidth: 1, marginBottom: 4 },
-    suggHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-    suggBadge:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
-    suggBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-    suggDate:    { fontSize: 11 },
-    suggText:    { fontSize: 13, lineHeight: 20 },
+    suggCard:      { borderRadius: 18, padding: 14, borderWidth: 1, marginBottom: 4 },
+    suggHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+    suggBadge:     { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
+    suggBadgeText: { color: '#fff', fontSize: 11, fontFamily: FONTS.bodyBold },
+    suggDate:      { fontSize: 11, fontFamily: FONTS.body },
+    suggText:      { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
 
     // Filter
-    filterRow:   { paddingVertical: 4, gap: 8 },
-    filterChip:  { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1 },
-    filterChipText: { fontSize: 12, fontWeight: '600' },
+    filterRow:      { paddingVertical: 4, gap: 8 },
+    filterChip:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1 },
+    filterChipText: { fontSize: 12, fontFamily: FONTS.bodyBold },
 
     // Trending
     trendSection: { marginVertical: 4 },
-    sectionLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-    trendRow:    { gap: 8 },
-    trendChip:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
-    trendEmoji:  { fontSize: 14 },
-    trendLabel:  { fontSize: 12, fontWeight: '600' },
+    sectionLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+    trendRow:     { gap: 8 },
+    trendChip:    { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
+    trendEmoji:   { fontSize: 14 },
+    trendLabel:   { fontSize: 12, fontFamily: FONTS.bodyBold },
 
-    feedCount:   { fontSize: 11, marginBottom: 4 },
+    feedCount:   { fontSize: 11, fontFamily: FONTS.body, marginBottom: 4 },
 
     // Post card
-    postCard:    { borderRadius: 20, padding: 16, borderWidth: 1, gap: 10 },
-    postMeta:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    catBadge:    { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
-    catBadgeText:{ fontSize: 11, fontWeight: '700' },
-    readTime:    { fontSize: 11 },
-    postTitle:   { fontSize: 16, fontWeight: '800', lineHeight: 22 },
-    postContent: { fontSize: 13, lineHeight: 20 },
-    readMore:    { fontSize: 13, fontWeight: '700' },
-    takeawayBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: 10 },
-    takeawayText:{ flex: 1, fontSize: 12, fontWeight: '600', lineHeight: 18 },
-    tagRow:      { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-    tagChip:     { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-    tagText:     { fontSize: 10, fontWeight: '600' },
+    postCard:     { borderRadius: 20, padding: 16, borderWidth: 1, gap: 10 },
+    postMeta:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    catBadge:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
+    catBadgeText: { fontSize: 11, fontFamily: FONTS.bodyBold },
+    readTime:     { fontSize: 11, fontFamily: FONTS.body },
+    postTitle:    { fontSize: 16, fontFamily: FONTS.title, lineHeight: 22 },
+    postContent:  { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
+    readMore:     { fontSize: 13, fontFamily: FONTS.bodyBold },
+    takeawayBox:  { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: 10 },
+    takeawayText: { flex: 1, fontSize: 12, fontFamily: FONTS.bodyBold, lineHeight: 18 },
+    tagRow:       { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+    tagChip:      { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+    tagText:      { fontSize: 10, fontFamily: FONTS.bodyBold },
 
     // Post actions
     postActions: { flexDirection: 'row', alignItems: 'center', gap: 4, borderTopWidth: 1, paddingTop: 10 },
     actionBtn:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
-    actionCount: { fontSize: 13, fontWeight: '600' },
+    actionCount: { fontSize: 13, fontFamily: FONTS.bodyBold },
 
     // Comment modal
-    modalOverlay:{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-    modalSheet:  { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 16, borderWidth: 1, borderBottomWidth: 0, maxHeight: '80%' },
-    modalHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
-    modalTitle:  { fontSize: 15, fontWeight: '700', marginBottom: 12 },
-    noComments:  { textAlign: 'center', fontSize: 13, paddingVertical: 20 },
-    commentRow:  { flexDirection: 'row', gap: 10, paddingVertical: 10, borderBottomWidth: 1 },
-    commentAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    commentAvatarText: { fontSize: 13, fontWeight: '700' },
-    commentEmail: { fontSize: 10, marginBottom: 3 },
-    commentText: { fontSize: 13, lineHeight: 19 },
-    commentInputRow: { flexDirection: 'row', gap: 8, paddingTop: 12, borderTopWidth: 1, alignItems: 'flex-end' },
-    commentInput: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 10, fontSize: 14, maxHeight: 80 },
-    sendBtn:     { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    modalOverlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+    modalSheet:        { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 16, borderWidth: 1, borderBottomWidth: 0, maxHeight: '80%' },
+    modalHandle:       { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
+    modalTitle:        { fontSize: 15, fontFamily: FONTS.bodyBold, marginBottom: 12 },
+    noComments:        { textAlign: 'center', fontSize: 13, fontFamily: FONTS.body, paddingVertical: 20 },
+    commentRow:        { flexDirection: 'row', gap: 10, paddingVertical: 10, borderBottomWidth: 1 },
+    commentAvatar:     { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    commentAvatarText: { fontSize: 13, fontFamily: FONTS.bodyBold },
+    commentEmail:      { fontSize: 10, fontFamily: FONTS.body, marginBottom: 3 },
+    commentText:       { fontSize: 13, fontFamily: FONTS.body, lineHeight: 19 },
+    commentInputRow:   { flexDirection: 'row', gap: 8, paddingTop: 12, borderTopWidth: 1, alignItems: 'flex-end' },
+    commentInput:      { flex: 1, borderWidth: 1, borderRadius: 12, padding: 10, fontSize: 14, fontFamily: FONTS.body, maxHeight: 80 },
+    sendBtn:           { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 
-    empty:       { paddingTop: 40, alignItems: 'center' },
-    emptyText:   { fontSize: 14 },
+    empty:     { paddingTop: 40, alignItems: 'center' },
+    emptyText: { fontSize: 14, fontFamily: FONTS.body },
 });

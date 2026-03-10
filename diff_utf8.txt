@@ -1,0 +1,343 @@
+﻿diff --git a/.claude/settings.local.json b/.claude/settings.local.json
+index 27bd8d8..a811295 100644
+--- a/.claude/settings.local.json
++++ b/.claude/settings.local.json
+@@ -1,10 +1,11 @@
+ {
+   "permissions": {
++    "allow": [
++      "Bash(ipconfig:*)",
++      "Read(//c/Users/user/OneDrive/Desktop/ai-blood-report/ai-blood-report/**)"
++    ],
+     "additionalDirectories": [
+       "c:\\Users\\user\\OneDrive\\Desktop\\ai-blood-report\\ai-blood-report\\app\\api"
+-    ],
+-    "allow": [
+-      "Bash(ipconfig:*)"
+     ]
+   }
+ }
+diff --git a/app/(tabs)/feed.tsx b/app/(tabs)/feed.tsx
+index 9db1c93..a62ce95 100644
+--- a/app/(tabs)/feed.tsx
++++ b/app/(tabs)/feed.tsx
+@@ -19,6 +19,7 @@ import {
+     HEALTH_POSTS, DAILY_FACTS, TRENDING_TOPICS,
+     CATEGORY_COLORS, type HealthPost, type PostCategory,
+ } from '../../lib/healthData';
++import { FONTS } from '../../constants/fonts';
+ 
+ type FilterCategory = 'All' | PostCategory;
+ const FILTER_CATEGORIES: FilterCategory[] = [
+@@ -66,7 +67,7 @@ function PostCard({
+         }).start();
+     }, []);
+ 
+-    const upAnim  = useRef(new Animated.Value(1)).current;
++    const upAnim   = useRef(new Animated.Value(1)).current;
+     const downAnim = useRef(new Animated.Value(1)).current;
+ 
+     const animateVote = (anim: Animated.Value) => {
+@@ -279,7 +280,7 @@ function CommentModal({
+ 
+ /* ΓöÇΓöÇΓöÇ Daily post rotation (deterministic shuffle by date) ΓöÇΓöÇΓöÇ */
+ function getDailyPosts(): HealthPost[] {
+-    const dateStr = new Date().toISOString().slice(0, 10); // 'yyyy-MM-dd'
++    const dateStr = new Date().toISOString().slice(0, 10);
+     let seed = 0;
+     for (const ch of dateStr) seed = (seed * 31 + ch.charCodeAt(0)) & 0xffffffff;
+     const arr = [...HEALTH_POSTS];
+@@ -288,7 +289,7 @@ function getDailyPosts(): HealthPost[] {
+         const j = Math.abs(seed) % (i + 1);
+         [arr[i], arr[j]] = [arr[j], arr[i]];
+     }
+-    return arr; // Full list, shuffled daily
++    return arr;
+ }
+ 
+ const DAILY_POSTS = getDailyPosts();
+@@ -310,7 +311,6 @@ export default function FeedScreen() {
+             setStatsLoading(false);
+             return;
+         }
+-        // Load post stats
+         const ids = HEALTH_POSTS.map(p => p.id);
+         const statsMap: typeof postStats = {};
+         const votesMap: typeof userVotes = {};
+@@ -350,7 +350,6 @@ export default function FeedScreen() {
+         const current  = userVotes[postId];
+ 
+         if (current === dir) {
+-            // Undo vote
+             await deleteDoc(voteRef);
+             await setDoc(statsRef, {
+                 [dir === 'up' ? 'likes' : 'dislikes']: increment(-1),
+@@ -364,7 +363,6 @@ export default function FeedScreen() {
+                 },
+             }));
+         } else {
+-            // New or switch vote
+             const updates: any = { [dir === 'up' ? 'likes' : 'dislikes']: increment(1) };
+             if (current) updates[current === 'up' ? 'likes' : 'dislikes'] = increment(-1);
+             await setDoc(voteRef, { vote: dir, userId: user.uid, postId }, { merge: true });
+@@ -408,7 +406,6 @@ export default function FeedScreen() {
+                 contentContainerStyle={styles.listContent}
+                 ListHeaderComponent={
+                     <>
+-                        {/* Suggestion / fact card */}
+                         <SuggestionCard C={C} />
+ 
+                         {/* Category filter */}
+@@ -467,9 +464,7 @@ export default function FeedScreen() {
+                             <Text style={[styles.feedCount, { color: C.textDim }]}>
+                                 {filtered.length} article{filtered.length !== 1 ? 's' : ''} ┬╖ Updated daily
+                             </Text>
+-                            {statsLoading && (
+-                                <ActivityIndicator size="small" color={C.primaryLight} />
+-                            )}
++                            {statsLoading && <ActivityIndicator size="small" color={C.primaryLight} />}
+                         </View>
+                     </>
+                 }
+@@ -511,68 +506,68 @@ const styles = StyleSheet.create({
+     listContent: { paddingHorizontal: 16, paddingBottom: 40, gap: 12 },
+ 
+     header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 56, paddingBottom: 16, borderBottomWidth: 1 },
+-    headerLabel: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
+-    headerTitle: { fontSize: 28, fontWeight: '900' },
++    headerLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, marginBottom: 2 },
++    headerTitle: { fontSize: 28, fontFamily: FONTS.title },
+     headerBadge: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+ 
+     // Suggestion card
+-    suggCard:    { borderRadius: 18, padding: 14, borderWidth: 1, marginBottom: 4 },
+-    suggHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+-    suggBadge:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
+-    suggBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+-    suggDate:    { fontSize: 11 },
+-    suggText:    { fontSize: 13, lineHeight: 20 },
++    suggCard:      { borderRadius: 18, padding: 14, borderWidth: 1, marginBottom: 4 },
++    suggHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
++    suggBadge:     { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
++    suggBadgeText: { color: '#fff', fontSize: 11, fontFamily: FONTS.bodyBold },
++    suggDate:      { fontSize: 11, fontFamily: FONTS.body },
++    suggText:      { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
+ 
+     // Filter
+-    filterRow:   { paddingVertical: 4, gap: 8 },
+-    filterChip:  { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1 },
+-    filterChipText: { fontSize: 12, fontWeight: '600' },
++    filterRow:      { paddingVertical: 4, gap: 8 },
++    filterChip:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1 },
++    filterChipText: { fontSize: 12, fontFamily: FONTS.bodyBold },
+ 
+     // Trending
+     trendSection: { marginVertical: 4 },
+-    sectionLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+-    trendRow:    { gap: 8 },
+-    trendChip:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
+-    trendEmoji:  { fontSize: 14 },
+-    trendLabel:  { fontSize: 12, fontWeight: '600' },
++    sectionLabel: { fontSize: 12, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
++    trendRow:     { gap: 8 },
++    trendChip:    { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
++    trendEmoji:   { fontSize: 14 },
++    trendLabel:   { fontSize: 12, fontFamily: FONTS.bodyBold },
+ 
+-    feedCount:   { fontSize: 11, marginBottom: 4 },
++    feedCount:   { fontSize: 11, fontFamily: FONTS.body, marginBottom: 4 },
+ 
+     // Post card
+-    postCard:    { borderRadius: 20, padding: 16, borderWidth: 1, gap: 10 },
+-    postMeta:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+-    catBadge:    { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
+-    catBadgeText:{ fontSize: 11, fontWeight: '700' },
+-    readTime:    { fontSize: 11 },
+-    postTitle:   { fontSize: 16, fontWeight: '800', lineHeight: 22 },
+-    postContent: { fontSize: 13, lineHeight: 20 },
+-    readMore:    { fontSize: 13, fontWeight: '700' },
+-    takeawayBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: 10 },
+-    takeawayText:{ flex: 1, fontSize: 12, fontWeight: '600', lineHeight: 18 },
+-    tagRow:      { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+-    tagChip:     { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+-    tagText:     { fontSize: 10, fontWeight: '600' },
++    postCard:     { borderRadius: 20, padding: 16, borderWidth: 1, gap: 10 },
++    postMeta:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
++    catBadge:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
++    catBadgeText: { fontSize: 11, fontFamily: FONTS.bodyBold },
++    readTime:     { fontSize: 11, fontFamily: FONTS.body },
++    postTitle:    { fontSize: 16, fontFamily: FONTS.title, lineHeight: 22 },
++    postContent:  { fontSize: 13, fontFamily: FONTS.body, lineHeight: 20 },
++    readMore:     { fontSize: 13, fontFamily: FONTS.bodyBold },
++    takeawayBox:  { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: 10 },
++    takeawayText: { flex: 1, fontSize: 12, fontFamily: FONTS.bodyBold, lineHeight: 18 },
++    tagRow:       { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
++    tagChip:      { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
++    tagText:      { fontSize: 10, fontFamily: FONTS.bodyBold },
+ 
+     // Post actions
+     postActions: { flexDirection: 'row', alignItems: 'center', gap: 4, borderTopWidth: 1, paddingTop: 10 },
+     actionBtn:   { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
+-    actionCount: { fontSize: 13, fontWeight: '600' },
++    actionCount: { fontSize: 13, fontFamily: FONTS.bodyBold },
+ 
+     // Comment modal
+-    modalOverlay:{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+-    modalSheet:  { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 16, borderWidth: 1, borderBottomWidth: 0, maxHeight: '80%' },
+-    modalHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
+-    modalTitle:  { fontSize: 15, fontWeight: '700', marginBottom: 12 },
+-    noComments:  { textAlign: 'center', fontSize: 13, paddingVertical: 20 },
+-    commentRow:  { flexDirection: 'row', gap: 10, paddingVertical: 10, borderBottomWidth: 1 },
+-    commentAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+-    commentAvatarText: { fontSize: 13, fontWeight: '700' },
+-    commentEmail: { fontSize: 10, marginBottom: 3 },
+-    commentText: { fontSize: 13, lineHeight: 19 },
+-    commentInputRow: { flexDirection: 'row', gap: 8, paddingTop: 12, borderTopWidth: 1, alignItems: 'flex-end' },
+-    commentInput: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 10, fontSize: 14, maxHeight: 80 },
+-    sendBtn:     { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+-
+-    empty:       { paddingTop: 40, alignItems: 'center' },
+-    emptyText:   { fontSize: 14 },
+-});
++    modalOverlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
++    modalSheet:        { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 16, borderWidth: 1, borderBottomWidth: 0, maxHeight: '80%' },
++    modalHandle:       { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
++    modalTitle:        { fontSize: 15, fontFamily: FONTS.bodyBold, marginBottom: 12 },
++    noComments:        { textAlign: 'center', fontSize: 13, fontFamily: FONTS.body, paddingVertical: 20 },
++    commentRow:        { flexDirection: 'row', gap: 10, paddingVertical: 10, borderBottomWidth: 1 },
++    commentAvatar:     { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
++    commentAvatarText: { fontSize: 13, fontFamily: FONTS.bodyBold },
++    commentEmail:      { fontSize: 10, fontFamily: FONTS.body, marginBottom: 3 },
++    commentText:       { fontSize: 13, fontFamily: FONTS.body, lineHeight: 19 },
++    commentInputRow:   { flexDirection: 'row', gap: 8, paddingTop: 12, borderTopWidth: 1, alignItems: 'flex-end' },
++    commentInput:      { flex: 1, borderWidth: 1, borderRadius: 12, padding: 10, fontSize: 14, fontFamily: FONTS.body, maxHeight: 80 },
++    sendBtn:           { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
++
++    empty:     { paddingTop: 40, alignItems: 'center' },
++    emptyText: { fontSize: 14, fontFamily: FONTS.body },
++});
+\ No newline at end of file
+diff --git a/package-lock.json b/package-lock.json
+index 7826b12..a83c2ad 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -21,6 +21,7 @@
+         "expo": "~55.0.5",
+         "expo-asset": "~55.0.8",
+         "expo-constants": "~55.0.7",
++        "expo-dev-client": "~55.0.13",
+         "expo-document-picker": "^55.0.8",
+         "expo-file-system": "^55.0.10",
+         "expo-font": "~55.0.4",
+@@ -4613,6 +4614,53 @@
+         "react-native": "*"
+       }
+     },
++    "node_modules/expo-dev-client": {
++      "version": "55.0.13",
++      "resolved": "https://registry.npmjs.org/expo-dev-client/-/expo-dev-client-55.0.13.tgz",
++      "integrity": "sha512-vy6K3qSD1bjKJ/TRO4xQWUzNn7gemy9OBZzd9unNQGRXkCNO6KOfh68sjAJNJT6szr5f/OxBHoEnHF3ynjwOpQ==",
++      "dependencies": {
++        "expo-dev-launcher": "55.0.14",
++        "expo-dev-menu": "55.0.12",
++        "expo-dev-menu-interface": "55.0.1",
++        "expo-manifests": "~55.0.9",
++        "expo-updates-interface": "~55.1.3"
++      },
++      "peerDependencies": {
++        "expo": "*"
++      }
++    },
++    "node_modules/expo-dev-launcher": {
++      "version": "55.0.14",
++      "resolved": "https://registry.npmjs.org/expo-dev-launcher/-/expo-dev-launcher-55.0.14.tgz",
++      "integrity": "sha512-43Z10thAbmZnG39kO5LOIlOjbDHWL1oia9u7UHPI+iskEUTOzgJ9Vkh3oZTba8dSdn6MLsJJ6JiR9CoqVzgoWw==",
++      "dependencies": {
++        "@expo/schema-utils": "^55.0.2",
++        "expo-dev-menu": "55.0.12",
++        "expo-manifests": "~55.0.9"
++      },
++      "peerDependencies": {
++        "expo": "*"
++      }
++    },
++    "node_modules/expo-dev-menu": {
++      "version": "55.0.12",
++      "resolved": "https://registry.npmjs.org/expo-dev-menu/-/expo-dev-menu-55.0.12.tgz",
++      "integrity": "sha512-nqz0uB+/wYXftEYKejd+/5syzRbfltIyQOZfDu+pYewIQosrYO6FIDu4bRW7wu165ua/sNAOzzereyxSe4h3zA==",
++      "dependencies": {
++        "expo-dev-menu-interface": "55.0.1"
++      },
++      "peerDependencies": {
++        "expo": "*"
++      }
++    },
++    "node_modules/expo-dev-menu-interface": {
++      "version": "55.0.1",
++      "resolved": "https://registry.npmjs.org/expo-dev-menu-interface/-/expo-dev-menu-interface-55.0.1.tgz",
++      "integrity": "sha512-FkNtwq1q6NmYoy28pj+ZLuHmirJgc039pQbJ167MZJIaprLcMN1yy67qA7xBHK+FNJ8AN8kGCtMTPByg5UC72A==",
++      "peerDependencies": {
++        "expo": "*"
++      }
++    },
+     "node_modules/expo-document-picker": {
+       "version": "55.0.8",
+       "resolved": "https://registry.npmjs.org/expo-document-picker/-/expo-document-picker-55.0.8.tgz",
+@@ -4691,6 +4739,11 @@
+         "expo": "*"
+       }
+     },
++    "node_modules/expo-json-utils": {
++      "version": "55.0.0",
++      "resolved": "https://registry.npmjs.org/expo-json-utils/-/expo-json-utils-55.0.0.tgz",
++      "integrity": "sha512-aupt/o5PDAb8dXDCb0JcRdkqnTLxe/F+La7jrnyd/sXlYFfRgBJLFOa1SqVFXm1E/Xam1SE/yw6eAb+DGY7Arg=="
++    },
+     "node_modules/expo-linking": {
+       "version": "55.0.7",
+       "resolved": "https://registry.npmjs.org/expo-linking/-/expo-linking-55.0.7.tgz",
+@@ -4715,6 +4768,18 @@
+         "expo": "*"
+       }
+     },
++    "node_modules/expo-manifests": {
++      "version": "55.0.9",
++      "resolved": "https://registry.npmjs.org/expo-manifests/-/expo-manifests-55.0.9.tgz",
++      "integrity": "sha512-i82j3X4hbxYDe6kxUw4u8WfvbvTj2w+9BD9WKuL0mFRy+MjvdzdyaqAjEViWCKo/alquP/hTApDTQBb3UmWhkg==",
++      "dependencies": {
++        "@expo/config": "~55.0.8",
++        "expo-json-utils": "~55.0.0"
++      },
++      "peerDependencies": {
++        "expo": "*"
++      }
++    },
+     "node_modules/expo-modules-autolinking": {
+       "version": "55.0.8",
+       "resolved": "https://registry.npmjs.org/expo-modules-autolinking/-/expo-modules-autolinking-55.0.8.tgz",
+@@ -4921,6 +4986,14 @@
+         "react-native": "*"
+       }
+     },
++    "node_modules/expo-updates-interface": {
++      "version": "55.1.3",
++      "resolved": "https://registry.npmjs.org/expo-updates-interface/-/expo-updates-interface-55.1.3.tgz",
++      "integrity": "sha512-UVVIiZqymQZJL+o/jh65kXOI97xdkbqBJJM0LMabaPMNLFnc6/WvOMOzmQs7SPyKb8+0PeBaFd7tj5DzF6JeQg==",
++      "peerDependencies": {
++        "expo": "*"
++      }
++    },
+     "node_modules/expo-web-browser": {
+       "version": "55.0.9",
+       "resolved": "https://registry.npmjs.org/expo-web-browser/-/expo-web-browser-55.0.9.tgz",
+diff --git a/package.json b/package.json
+index 825078d..f3aa6be 100644
+--- a/package.json
++++ b/package.json
+@@ -22,6 +22,7 @@
+     "expo": "~55.0.5",
+     "expo-asset": "~55.0.8",
+     "expo-constants": "~55.0.7",
++    "expo-dev-client": "~55.0.13",
+     "expo-document-picker": "^55.0.8",
+     "expo-file-system": "^55.0.10",
+     "expo-font": "~55.0.4",
