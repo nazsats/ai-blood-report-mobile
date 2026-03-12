@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../lib/firebaseClient';
+import { useAuth } from '../../hooks/useAuth';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useColors, useRiskColors, scoreColor } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -99,6 +100,7 @@ export default function ResultsScreen() {
     const [loading, setLoading]     = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('summary');
     const router = useRouter();
+    const { user } = useAuth();
     const C  = useColors();
     const RC = useRiskColors();
 
@@ -151,6 +153,21 @@ export default function ResultsScreen() {
                     <Ionicons name="document-text-outline" size={40} color={C.primaryLight} />
                 </View>
                 <Text style={[s.notFound, { color: C.textMuted }]}>Report not found.</Text>
+                <TouchableOpacity style={[s.backBtn, { backgroundColor: C.primaryMuted, borderColor: C.primaryBorder }]} onPress={() => router.back()}>
+                    <Text style={[s.backBtnText, { color: C.primaryLight }]}>Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    // ── IDOR ownership check ───────────────────────────────────────────────
+    if (report.userId && user && report.userId !== user.uid) {
+        return (
+            <View style={[s.center, { backgroundColor: C.bg }]}>
+                <View style={[s.notFoundIcon, { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.25)' }]}>
+                    <Ionicons name="lock-closed-outline" size={40} color="#f87171" />
+                </View>
+                <Text style={[s.notFound, { color: C.textMuted }]}>Access denied.</Text>
                 <TouchableOpacity style={[s.backBtn, { backgroundColor: C.primaryMuted, borderColor: C.primaryBorder }]} onPress={() => router.back()}>
                     <Text style={[s.backBtnText, { color: C.primaryLight }]}>Go Back</Text>
                 </TouchableOpacity>

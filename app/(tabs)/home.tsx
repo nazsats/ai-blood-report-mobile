@@ -5,7 +5,7 @@ import {
     Animated, Modal, TextInput, KeyboardAvoidingView,
     Platform, Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { secureStorage } from '../../lib/secureStorage';
 import {
     collection, query, where, orderBy, limit, getDocs, doc, getDoc,
 } from 'firebase/firestore';
@@ -493,17 +493,17 @@ export default function DashboardScreen() {
     };
 
     const loadStepGoal = async () => {
-        const saved = await AsyncStorage.getItem(STEP_GOAL_KEY);
+        const saved = await secureStorage.getItem(STEP_GOAL_KEY);
         if (saved) setStepGoal(parseInt(saved, 10));
     };
 
     const saveStepGoal = async (goal: number) => {
         setStepGoal(goal);
-        await AsyncStorage.setItem(STEP_GOAL_KEY, String(goal));
+        await secureStorage.setItem(STEP_GOAL_KEY, String(goal));
     };
 
     const loadHabits = async () => {
-        const saved = await AsyncStorage.getItem(HABIT_KEY());
+        const saved = await secureStorage.getItem(HABIT_KEY());
         if (saved) {
             try { setHabits(JSON.parse(saved)); } catch {}
         }
@@ -513,7 +513,7 @@ export default function DashboardScreen() {
         const next = [...habits];
         next[idx] = !next[idx];
         setHabits(next);
-        await AsyncStorage.setItem(HABIT_KEY(), JSON.stringify(next));
+        await secureStorage.setItem(HABIT_KEY(), JSON.stringify(next));
     };
 
     const computeStreak = async (goal: number) => {
@@ -521,15 +521,15 @@ export default function DashboardScreen() {
         const today = new Date();
         for (let i = 0; i < 365; i++) {
             const d   = subDays(today, i);
-            const val = await AsyncStorage.getItem(DAY_KEY(d));
+            const val = await secureStorage.getItem(DAY_KEY(d));
             const s   = val ? parseInt(val, 10) : 0;
             if (s >= goal) { current++; }
             else if (i > 0) { break; }
         }
-        const savedBest = await AsyncStorage.getItem(BEST_STREAK_KEY);
+        const savedBest = await secureStorage.getItem(BEST_STREAK_KEY);
         const best      = Math.max(current, savedBest ? parseInt(savedBest, 10) : 0);
         if (current > (savedBest ? parseInt(savedBest, 10) : 0)) {
-            await AsyncStorage.setItem(BEST_STREAK_KEY, String(current));
+            await secureStorage.setItem(BEST_STREAK_KEY, String(current));
         }
         setStreak(current);
         setBestStreak(best);
@@ -550,28 +550,28 @@ export default function DashboardScreen() {
     };
 
     const initSteps = async () => {
-        const goal           = parseInt((await AsyncStorage.getItem(STEP_GOAL_KEY)) || String(DEFAULT_STEP_GOAL), 10);
+        const goal           = parseInt((await secureStorage.getItem(STEP_GOAL_KEY)) || String(DEFAULT_STEP_GOAL), 10);
         const pedometerSteps = await getPedometerSteps();
         if (pedometerSteps !== null) {
             setPedometerActive(true);
             setSteps(pedometerSteps);
-            await AsyncStorage.setItem(TODAY_KEY(), String(pedometerSteps));
+            await secureStorage.setItem(TODAY_KEY(), String(pedometerSteps));
             // Bug 14 fix: clear old interval before creating a new one
             if (stepInterval.current) clearInterval(stepInterval.current);
             stepInterval.current = setInterval(async () => {
                 const s = await getPedometerSteps();
                 if (s !== null) {
                     setSteps(s);
-                    await AsyncStorage.setItem(TODAY_KEY(), String(s));
+                    await secureStorage.setItem(TODAY_KEY(), String(s));
                     // Update today's bar (always index 6 in the 7-day array)
                     setWeeklySteps(prev => { const n = [...prev]; n[6] = s; return n; });
                 }
             }, 30000);
         } else {
-            const todayVal = await AsyncStorage.getItem(TODAY_KEY());
+            const todayVal = await secureStorage.getItem(TODAY_KEY());
             setSteps(todayVal ? parseInt(todayVal, 10) : 0);
         }
-        // Bug 6 fix: load weekly steps first (writes today to AsyncStorage), then compute streak
+        // Bug 6 fix: load weekly steps first (writes today to SecureStore), then compute streak
         await loadWeeklySteps();
         await computeStreak(goal);
     };
@@ -581,7 +581,7 @@ export default function DashboardScreen() {
         const weekly: number[] = [];
         for (let i = 6; i >= 0; i--) {
             const d   = subDays(today, i);
-            const val = await AsyncStorage.getItem(DAY_KEY(d));
+            const val = await secureStorage.getItem(DAY_KEY(d));
             weekly.push(val ? parseInt(val, 10) : 0);
         }
         // index 0 = 6 days ago, index 6 = today (no shifting needed)
@@ -654,7 +654,7 @@ export default function DashboardScreen() {
     };
 
     const saveSteps = async (newSteps: number) => {
-        await AsyncStorage.setItem(TODAY_KEY(), String(newSteps));
+        await secureStorage.setItem(TODAY_KEY(), String(newSteps));
         setSteps(newSteps);
         setWeeklySteps(prev => { const n = [...prev]; n[6] = newSteps; return n; }); // index 6 = today
         computeStreak(stepGoal);

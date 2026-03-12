@@ -114,6 +114,21 @@ export default function AnalyzeScreen() {
         const user = auth.currentUser;
         if (!user) { Alert.alert('Not signed in', 'Please sign in first.'); return; }
 
+        // ── Client-side file validation ────────────────────────────────────
+        const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+        if (!ALLOWED_TYPES.includes(selectedFile.type)) {
+            Alert.alert('Unsupported File', 'Only PDF, JPEG, and PNG files are supported.');
+            return;
+        }
+        const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+        if (selectedFile.uri && Platform.OS !== 'web') {
+            const info = await FileSystem.getInfoAsync(selectedFile.uri);
+            if (info.exists && (info as any).size > MAX_SIZE) {
+                Alert.alert('File Too Large', 'Maximum file size is 10 MB. Please choose a smaller file.');
+                return;
+            }
+        }
+
         setUploading(true);
         setLoadingStep(0);
         const stepInterval = setInterval(() => {
