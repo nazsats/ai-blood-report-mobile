@@ -55,14 +55,7 @@ export default function TabsLayout() {
                         <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} color={color} />,
                 }}
             />
-            <Tabs.Screen
-                name="feed"
-                options={{
-                    title: 'Feed',
-                    tabBarIcon: ({ focused, color }) =>
-                        <TabIcon name={focused ? 'newspaper' : 'newspaper-outline'} focused={focused} color={color} />,
-                }}
-            />
+            {/* 2 — Analyze Hub (Blood Report + Meal Scanner + Calculators) */}
             <Tabs.Screen
                 name="upload"
                 options={{
@@ -71,6 +64,18 @@ export default function TabsLayout() {
                         <TabIcon name={focused ? 'scan' : 'scan-outline'} focused={focused} color={color} />,
                 }}
             />
+
+            {/* 3 — AI Health Chat */}
+            <Tabs.Screen
+                name="chat"
+                options={{
+                    title: 'AI Chat',
+                    tabBarIcon: ({ focused, color }) =>
+                        <TabIcon name={focused ? 'chatbubbles' : 'chatbubbles-outline'} focused={focused} color={color} />,
+                }}
+            />
+
+            {/* 4 — Reports History */}
             <Tabs.Screen
                 name="history"
                 options={{
@@ -79,6 +84,8 @@ export default function TabsLayout() {
                         <TabIcon name={focused ? 'document-text' : 'document-text-outline'} focused={focused} color={color} />,
                 }}
             />
+
+            {/* 5 — Profile & Settings */}
             <Tabs.Screen
                 name="profile"
                 options={{
@@ -86,6 +93,12 @@ export default function TabsLayout() {
                     tabBarIcon: ({ focused, color }) =>
                         <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} color={color} />,
                 }}
+            />
+
+            {/* Feed hidden from tab bar — accessible from home page */}
+            <Tabs.Screen
+                name="feed"
+                options={{ href: null }}
             />
         </Tabs>
     );
