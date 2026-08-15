@@ -1,10 +1,13 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, type ColorValue } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../../constants/colors';
 
-function TabIcon({ name, focused, color }: { name: any; focused: boolean; color: string }) {
+// `color` is whatever expo-router hands the tabBarIcon renderer, which since
+// RN 0.86 is ColorValue rather than string — it may be an opaque platform
+// colour, not just a hex literal. Ionicons accepts the wider type.
+function TabIcon({ name, focused, color }: { name: any; focused: boolean; color: ColorValue }) {
     return (
         <View style={[tabStyles.iconWrap, focused && tabStyles.iconWrapActive]}>
             <Ionicons name={name} size={22} color={color} />

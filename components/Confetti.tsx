@@ -77,7 +77,7 @@ export const Confetti = memo(function Confetti({ active, onDone }: Props) {
     if (!active) return null;
 
     return (
-        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
             {pieces.map((p, i) => (
                 <Animated.View
                     key={i}

@@ -7,11 +7,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "bloodai",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0a0414"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bloodai.app",
@@ -25,8 +20,7 @@
         "backgroundColor": "#0a0414"
       },
       "package": "com.bloodai.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"],
-      "usesCleartextTraffic": true
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"]
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +28,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0a0414"
+        }
+      ],
       [
         "expo-image-picker",
         {
