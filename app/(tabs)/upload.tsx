@@ -11,6 +11,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { auth, db, API_BASE_URL } from '../../lib/firebaseClient';
+import { FREE_SCAN_LIMIT, ensureSignedIn, needsAccount, recordGuestScan } from '../../lib/guestAuth';
 import { useColors } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { FONTS } from '../../constants/fonts';
@@ -118,8 +119,30 @@ export default function AnalyzeHubScreen() {
     // ── Upload & Analyze ──────────────────────────────────────────────────────
     const handleAnalyze = async () => {
         if (!selectedFile) return;
-        const currentUser = auth.currentUser;
-        if (!currentUser) { Alert.alert('Not signed in', 'Please sign in first.'); return; }
+
+        // No sign-in wall. A first-time visitor gets an anonymous identity here
+        // so they can read one report before deciding whether to hand over an
+        // email — the moment we ask is after they have seen the app work, not
+        // before.
+        let currentUser;
+        try {
+            currentUser = await ensureSignedIn();
+        } catch {
+            Alert.alert('No connection', 'Plainly needs to be online to read a report. Please check your connection and try again.');
+            return;
+        }
+
+        if (await needsAccount(currentUser)) {
+            Alert.alert(
+                'Create a free account',
+                `You've used your ${FREE_SCAN_LIMIT === 1 ? 'free scan' : `${FREE_SCAN_LIMIT} free scans`}. Create an account to keep reading reports — the one you already scanned stays in your history.`,
+                [
+                    { text: 'Not now', style: 'cancel' },
+                    { text: 'Create account', onPress: () => router.push('/(auth)/login') },
+                ],
+            );
+            return;
+        }
 
         // Client-side file validation
         const ALLOWED = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
@@ -204,6 +227,11 @@ export default function AnalyzeHubScreen() {
 
             clearInterval(stepInterval);
             if (!data.reportId) throw new Error('Invalid server response: missing reportId');
+
+            // Counted only on success. A scan that failed on a bad photo or a
+            // server error should not spend someone's one free look.
+            if (currentUser.isAnonymous) await recordGuestScan();
+
             router.push(`/results/${data.reportId}`);
             setUploading(false);
             setSelectedFile(null);

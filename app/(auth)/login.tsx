@@ -5,7 +5,8 @@ import {
     KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
     Alert, Animated,
 } from 'react-native';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createAccount } from '../../lib/guestAuth';
 import { auth } from '../../lib/firebaseClient';
 import { Colors } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,7 +47,10 @@ export default function LoginScreen() {
         setLoading(true);
         try {
             if (isSignUp) {
-                await createUserWithEmailAndPassword(auth, email.trim(), password);
+                // Upgrades the guest account in place rather than making a new
+                // one, so the report they scanned before signing up is still
+                // in their history afterwards.
+                await createAccount(email.trim(), password);
             } else {
                 await signInWithEmailAndPassword(auth, email.trim(), password);
             }
