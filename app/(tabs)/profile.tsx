@@ -510,7 +510,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
 
                 <Text style={[styles.footer, { color: C.textDim }]}>
-                    FitHealth AI · Data stored in your private Firestore account
+                    Plainly · Your reports are stored in your own private account
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>

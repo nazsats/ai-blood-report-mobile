@@ -10,14 +10,17 @@ interface ThemeContextType {
     toggleTheme: () => void;
 }
 
+// Light by default. A dark medical app reads as clinical and slightly ominous,
+// and the people opening this one are often already anxious about the result.
+// Dark is still available via the toggle for anyone who prefers it.
 const ThemeContext = createContext<ThemeContextType>({
-    mode: 'dark',
-    isDark: true,
+    mode: 'light',
+    isDark: false,
     toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-    const [mode, setMode] = useState<ThemeMode>('dark');
+    const [mode, setMode] = useState<ThemeMode>('light');
 
     useEffect(() => {
         AsyncStorage.getItem('themeMode').then(saved => {

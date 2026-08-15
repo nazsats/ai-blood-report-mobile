@@ -38,41 +38,56 @@ export const DARK = {
     gradient:       ['#7c3aed', '#8b5cf6'] as string[],
 };
 
-/* ─── Light Palette ─── */
+/* ─── Light Palette ───
+ *
+ * Deep teal on a warm off-white. Teal because the health-app market is a wall
+ * of the same corporate blue, and because it stays calm at the saturation a
+ * primary action needs. Off-white rather than pure white: a full-brightness
+ * screen is tiring to read a page of numbers on.
+ *
+ * Contrast: primary #0F766E on card white is 4.9:1, textPrimary is 16.1:1 —
+ * both clear AA. The old palette put #7c3aed on lavender, which read as a
+ * creative tool rather than something you trust with a blood test.
+ *
+ * The status colours are deliberately deep rather than bright. An out-of-range
+ * marker is usually clinically boring, and a screen of siren-red says the
+ * opposite to someone already worried. The wording carries the meaning; the
+ * colour only sorts.
+ */
 export const LIGHT = {
-    bg:             '#f5f3ff',
-    bgCard:         '#ffffff',
-    bgCardSolid:    '#ffffff',
-    primary:        '#7c3aed',
-    primaryLight:   '#6d28d9',
-    primaryDark:    '#5b21b6',
-    primaryBorder:  'rgba(124,58,237,0.2)',
-    primaryMuted:   'rgba(124,58,237,0.08)',
-    secondary:      '#0891b2',
-    secondaryLight: '#0e7490',
-    secondaryMuted: 'rgba(8,145,178,0.08)',
-    accent:         '#059669',
-    accentMuted:    'rgba(5,150,105,0.1)',
+    bg:             '#F7F9F9',
+    bgCard:         '#FFFFFF',
+    bgCardSolid:    '#FFFFFF',
+    primary:        '#0F766E',
+    primaryLight:   '#0D9488',
+    primaryDark:    '#115E59',
+    primaryBorder:  'rgba(15,118,110,0.18)',
+    primaryMuted:   'rgba(15,118,110,0.07)',
+    secondary:      '#0369A1',
+    secondaryLight: '#0284C7',
+    secondaryMuted: 'rgba(3,105,161,0.07)',
+    accent:         '#047857',
+    accentMuted:    'rgba(4,120,87,0.08)',
     accentLight:    '#059669',
-    success:        '#059669',
-    successMuted:   'rgba(5,150,105,0.08)',
-    textPrimary:    '#1e1033',
+    success:        '#047857',
+    successMuted:   'rgba(4,120,87,0.08)',
+    textPrimary:    '#111827',
     textSecondary:  '#374151',
-    textMuted:      '#6b7280',
-    textDim:        '#9ca3af',
-    border:         'rgba(0,0,0,0.09)',
-    borderLight:    'rgba(0,0,0,0.05)',
-    warning:        '#d97706',
-    warningMuted:   'rgba(217,119,6,0.08)',
-    danger:         '#dc2626',
-    dangerMuted:    'rgba(220,38,38,0.08)',
-    tabBar:         '#ffffff',
-    tabBarBorder:   'rgba(0,0,0,0.08)',
-    inputBg:        'rgba(0,0,0,0.04)',
-    shimmer1:       'rgba(0,0,0,0.04)',
-    shimmer2:       'rgba(0,0,0,0.08)',
-    cardBgHover:    'rgba(0,0,0,0.04)',
-    gradient:       ['#7c3aed', '#8b5cf6'] as string[],
+    textMuted:      '#6B7280',
+    textDim:        '#9CA3AF',
+    border:         'rgba(17,24,39,0.10)',
+    borderLight:    'rgba(17,24,39,0.05)',
+    warning:        '#B45309',
+    warningMuted:   'rgba(180,83,9,0.08)',
+    danger:         '#B91C1C',
+    dangerMuted:    'rgba(185,28,28,0.07)',
+    tabBar:         '#FFFFFF',
+    tabBarBorder:   'rgba(17,24,39,0.08)',
+    inputBg:        'rgba(17,24,39,0.04)',
+    shimmer1:       'rgba(17,24,39,0.04)',
+    shimmer2:       'rgba(17,24,39,0.08)',
+    cardBgHover:    'rgba(17,24,39,0.04)',
+    gradient:       ['#0F766E', '#0D9488'] as string[],
 };
 
 export type ColorPalette = typeof DARK;

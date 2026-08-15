@@ -132,7 +132,7 @@ export default function ResultsScreen() {
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `My blood report score: ${report?.overallScore}/10 — analyzed by BloodAI`,
+                message: `My blood report score: ${report?.overallScore}/10 — explained by Plainly`,
             });
         } catch {}
     };

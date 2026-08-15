@@ -94,7 +94,7 @@ export default function LoginScreen() {
                         <View style={styles.logoPulse} />
                     </View>
 
-                    <Text style={styles.appName}>FitHealth AI</Text>
+                    <Text style={styles.appName}>Plainly</Text>
                     <Text style={styles.tagline}>Your fitness & health companion</Text>
 
                     {/* Feature chips */}

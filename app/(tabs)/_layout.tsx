@@ -50,35 +50,17 @@ export default function TabsLayout() {
                 tabBarShowLabel: true,
             }}
         >
-            <Tabs.Screen
-                name="home"
-                options={{
-                    title: 'Dashboard',
-                    tabBarIcon: ({ focused, color }) =>
-                        <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} color={color} />,
-                }}
-            />
-            {/* 2 — Analyze Hub (Blood Report + Meal Scanner + Calculators) */}
+            {/* Three tabs, in the order someone actually uses the app: take a
+                photo, read what it said, manage the account. Everything else
+                lives under More in Profile — see the hidden routes below. */}
             <Tabs.Screen
                 name="upload"
                 options={{
-                    title: 'Analyze',
+                    title: 'Scan',
                     tabBarIcon: ({ focused, color }) =>
                         <TabIcon name={focused ? 'scan' : 'scan-outline'} focused={focused} color={color} />,
                 }}
             />
-
-            {/* 3 — AI Health Chat */}
-            <Tabs.Screen
-                name="chat"
-                options={{
-                    title: 'AI Chat',
-                    tabBarIcon: ({ focused, color }) =>
-                        <TabIcon name={focused ? 'chatbubbles' : 'chatbubbles-outline'} focused={focused} color={color} />,
-                }}
-            />
-
-            {/* 4 — Reports History */}
             <Tabs.Screen
                 name="history"
                 options={{
@@ -87,22 +69,22 @@ export default function TabsLayout() {
                         <TabIcon name={focused ? 'document-text' : 'document-text-outline'} focused={focused} color={color} />,
                 }}
             />
-
-            {/* 5 — Profile & Settings */}
             <Tabs.Screen
                 name="profile"
                 options={{
-                    title: 'Profile',
+                    title: 'You',
                     tabBarIcon: ({ focused, color }) =>
                         <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} color={color} />,
                 }}
             />
 
-            {/* Feed hidden from tab bar — accessible from home page */}
-            <Tabs.Screen
-                name="feed"
-                options={{ href: null }}
-            />
+            {/* Hidden, not deleted. `href: null` keeps the route reachable by
+                navigation while taking it out of the tab bar, so the habit
+                tracker, chat and feed still work for anyone who goes looking
+                — they just no longer compete with the one job this app has. */}
+            <Tabs.Screen name="home" options={{ href: null }} />
+            <Tabs.Screen name="chat" options={{ href: null }} />
+            <Tabs.Screen name="feed" options={{ href: null }} />
         </Tabs>
     );
 }

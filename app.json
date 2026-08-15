@@ -1,23 +1,23 @@
 {
   "expo": {
-    "name": "BloodAI",
+    "name": "Plainly",
     "slug": "ai-blood-report-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "scheme": "bloodai",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bloodai.app",
       "infoPlist": {
-        "NSMotionUsageDescription": "FitHealth AI uses motion data to automatically count your daily steps."
+        "NSMotionUsageDescription": "Plainly uses motion data to count your daily steps."
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundColor": "#0a0414"
+        "backgroundColor": "#F7F9F9"
       },
       "package": "com.bloodai.app",
       "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"]
@@ -33,14 +33,14 @@
         {
           "image": "./assets/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#0a0414"
+          "backgroundColor": "#F7F9F9"
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow BloodAI to access your photos to upload blood reports.",
-          "cameraPermission": "Allow BloodAI to use your camera to photograph blood reports."
+          "photosPermission": "Plainly needs your photos so you can pick a blood report you have already saved.",
+          "cameraPermission": "Plainly needs your camera so you can photograph a blood report."
         }
       ],
       "expo-document-picker",
@@ -50,13 +50,13 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow FitHealth AI to access your location to show air quality for your area."
+          "locationWhenInUsePermission": "Plainly uses your location to show local air quality."
         }
       ],
       [
         "expo-sensors",
         {
-          "motionPermission": "Allow FitHealth AI to track your steps automatically using your device's motion sensor."
+          "motionPermission": "Plainly uses your device's motion sensor to count steps."
         }
       ]
     ],
