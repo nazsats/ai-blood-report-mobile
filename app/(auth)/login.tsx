@@ -8,14 +8,16 @@ import {
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { createAccount } from '../../lib/guestAuth';
 import { auth } from '../../lib/firebaseClient';
-import { Colors } from '../../constants/colors';
+import { LIGHT } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
+// These chips are what someone reads while deciding whether to hand over an
+// email, so they describe what the app returns rather than what it contains.
 const FEATURES = [
-    { icon: 'footsteps-outline',    label: 'Step Tracking',       color: '#34d399' },
-    { icon: 'scan-outline',         label: 'AI Blood Analysis',   color: '#f87171' },
-    { icon: 'newspaper-outline',    label: 'Health Feed',         color: '#a5b4fc' },
-    { icon: 'trending-up-outline',  label: 'Progress Insights',   color: '#67e8f9' },
+    { icon: 'book-outline',            label: 'Plain English',    color: LIGHT.primary   },
+    { icon: 'analytics-outline',       label: 'Every marker',     color: LIGHT.secondary },
+    { icon: 'help-circle-outline',     label: 'Doctor questions', color: LIGHT.accent    },
+    { icon: 'flash-outline',           label: 'In 30 seconds',    color: LIGHT.primary   },
 ];
 
 export default function LoginScreen() {
@@ -92,14 +94,14 @@ export default function LoginScreen() {
                     <View style={styles.logoWrap}>
                         <View style={styles.logoOuter}>
                             <View style={styles.logoCircle}>
-                                <Ionicons name="fitness" size={36} color="#fff" />
+                                <Ionicons name="water" size={36} color="#ffffff" />
                             </View>
                         </View>
                         <View style={styles.logoPulse} />
                     </View>
 
-                    <Text style={styles.appName}>Plainly</Text>
-                    <Text style={styles.tagline}>Your fitness & health companion</Text>
+                    <Text style={styles.appName}>Blood Lab</Text>
+                    <Text style={styles.tagline}>Understand your blood test</Text>
 
                     {/* Feature chips */}
                     <View style={styles.featRow}>
@@ -132,7 +134,7 @@ export default function LoginScreen() {
 
                     {isSignUp && (
                         <Text style={styles.signUpHint}>
-                            Join thousands tracking their health journey 💪
+                            Your reports stay in your account, private to you.
                         </Text>
                     )}
 
@@ -140,13 +142,13 @@ export default function LoginScreen() {
                     <View style={styles.fieldGroup}>
                         <Text style={styles.label}>Email</Text>
                         <View style={styles.inputWrapper}>
-                            <Ionicons name="mail-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
+                            <Ionicons name="mail-outline" size={18} color={C.textMuted} style={styles.inputIcon} />
                             <TextInput
                                 style={styles.input}
                                 value={email}
                                 onChangeText={setEmail}
                                 placeholder="your@email.com"
-                                placeholderTextColor={Colors.textDim}
+                                placeholderTextColor={C.textDim}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 autoCorrect={false}
@@ -158,13 +160,13 @@ export default function LoginScreen() {
                     <View style={styles.fieldGroup}>
                         <Text style={styles.label}>Password</Text>
                         <View style={styles.inputWrapper}>
-                            <Ionicons name="lock-closed-outline" size={18} color={Colors.textMuted} style={styles.inputIcon} />
+                            <Ionicons name="lock-closed-outline" size={18} color={C.textMuted} style={styles.inputIcon} />
                             <TextInput
                                 style={[styles.input, { paddingRight: 44 }]}
                                 value={password}
                                 onChangeText={setPassword}
                                 placeholder={isSignUp ? 'Minimum 6 characters' : 'Enter password'}
-                                placeholderTextColor={Colors.textDim}
+                                placeholderTextColor={C.textDim}
                                 secureTextEntry={!showPassword}
                                 autoCapitalize="none"
                             />
@@ -175,7 +177,7 @@ export default function LoginScreen() {
                                 <Ionicons
                                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                                     size={18}
-                                    color={Colors.textMuted}
+                                    color={C.textMuted}
                                 />
                             </TouchableOpacity>
                         </View>
@@ -218,17 +220,17 @@ export default function LoginScreen() {
                 {/* Trust badges */}
                 <View style={styles.trustRow}>
                     <View style={styles.trustItem}>
-                        <Ionicons name="shield-checkmark-outline" size={14} color={Colors.textDim} />
+                        <Ionicons name="shield-checkmark-outline" size={14} color={C.textDim} />
                         <Text style={styles.trustText}>Encrypted</Text>
                     </View>
                     <View style={styles.trustDivider} />
                     <View style={styles.trustItem}>
-                        <Ionicons name="lock-closed-outline" size={14} color={Colors.textDim} />
+                        <Ionicons name="lock-closed-outline" size={14} color={C.textDim} />
                         <Text style={styles.trustText}>Private</Text>
                     </View>
                     <View style={styles.trustDivider} />
                     <View style={styles.trustItem}>
-                        <Ionicons name="flash-outline" size={14} color={Colors.textDim} />
+                        <Ionicons name="flash-outline" size={14} color={C.textDim} />
                         <Text style={styles.trustText}>Fast AI</Text>
                     </View>
                 </View>
@@ -237,7 +239,7 @@ export default function LoginScreen() {
     );
 }
 
-const C = Colors;
+const C = LIGHT;
 const styles = StyleSheet.create({
     container:      { flex: 1, backgroundColor: C.bg },
     scroll:         { flexGrow: 1, paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40, alignItems: 'center' },

@@ -128,7 +128,7 @@ export default function AnalyzeHubScreen() {
         try {
             currentUser = await ensureSignedIn();
         } catch {
-            Alert.alert('No connection', 'Plainly needs to be online to read a report. Please check your connection and try again.');
+            Alert.alert('No connection', 'Blood Lab needs to be online to read a report. Please check your connection and try again.');
             return;
         }
 
@@ -308,7 +308,7 @@ export default function AnalyzeHubScreen() {
         <View style={[st.screen, { backgroundColor: C2.bg }]}>
             <ScrollView contentContainerStyle={st.scroll} showsVerticalScrollIndicator={false}>
                 <View style={st.topRow}>
-                    <Text style={[st.wordmark, { color: C2.primary }]}>Plainly</Text>
+                    <Text style={[st.wordmark, { color: C2.primary }]}>Blood Lab</Text>
                     <TouchableOpacity
                         style={[st.moreBtn, { borderColor: C2.border }]}
                         onPress={() => router.push('/more')}
@@ -447,7 +447,7 @@ export default function AnalyzeHubScreen() {
                 ) : null}
 
                 <Text style={[st.disclaimer, { color: C2.textDim }]}>
-                    Plainly explains what your results say. It is not a diagnosis and does
+                    Blood Lab explains what your results say. It is not a diagnosis and does
                     not replace your doctor.
                 </Text>
             </ScrollView>

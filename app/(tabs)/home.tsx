@@ -604,7 +604,7 @@ export default function DashboardScreen() {
             const [aqiResp, cityResp] = await Promise.all([
                 fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=us_aqi`, { signal: controller.signal }),
                 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`, {
-                    headers: { 'User-Agent': 'Plainly/1.0' },
+                    headers: { 'User-Agent': 'Blood Lab/1.0' },
                     signal: controller.signal,
                 }),
             ]);
@@ -1011,7 +1011,7 @@ export default function DashboardScreen() {
                     <Text style={[styles.tipBody, { color: C.textSecondary }]}>{todayTip.body}</Text>
                 </View>
 
-                <Text style={[styles.footer, { color: C.textDim }]}>Plainly</Text>
+                <Text style={[styles.footer, { color: C.textDim }]}>Blood Lab</Text>
 
                 {/* ─── Modals ─── */}
                 <LogStepsModal visible={logVisible} currentSteps={steps} onSave={saveSteps} onClose={() => setLogVisible(false)} C={C} />

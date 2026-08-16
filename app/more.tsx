@@ -33,7 +33,7 @@ export default function MoreScreen() {
 
     const open = (item: Item) => {
         if (item.soon || !item.href) {
-            Alert.alert(item.title, 'This one is on the way. For now, Plainly focuses on reading your blood reports.');
+            Alert.alert(item.title, 'This one is on the way. For now, Blood Lab focuses on reading your blood reports.');
             return;
         }
         router.push(item.href as never);

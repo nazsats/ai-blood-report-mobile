@@ -295,29 +295,22 @@ export default function ProfileScreen() {
                     </View>
                 </Animated.View>
 
-                {/* Fitness Stats */}
+                {/* Steps, calories and active days went with the fitness
+                    features. What is left is the one number this app is
+                    actually about, so it gets stated plainly rather than
+                    padded back out to a four-box grid. */}
                 <View style={[styles.statsCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
-                    <Text style={[styles.cardTitle, { color: C.textPrimary }]}>This Week's Activity</Text>
-                    <View style={styles.statsRow}>
-                        <View style={[styles.statBox, { backgroundColor: C.inputBg }]}>
-                            <Text style={{ fontSize: 20 }}>{milestone.emoji}</Text>
-                            <Text style={[styles.statVal, { color: C.textPrimary }]}>{totalStepsWeek.toLocaleString()}</Text>
-                            <Text style={[styles.statLbl, { color: C.textDim }]}>Total Steps</Text>
+                    <View style={styles.reportsRow}>
+                        <View style={[styles.reportsIcon, { backgroundColor: C.primaryMuted }]}>
+                            <Ionicons name="document-text" size={20} color={C.primary} />
                         </View>
-                        <View style={[styles.statBox, { backgroundColor: C.inputBg }]}>
-                            <Text style={{ fontSize: 20 }}>🔥</Text>
-                            <Text style={[styles.statVal, { color: C.textPrimary }]}>{weekCals}</Text>
-                            <Text style={[styles.statLbl, { color: C.textDim }]}>Calories</Text>
-                        </View>
-                        <View style={[styles.statBox, { backgroundColor: C.inputBg }]}>
-                            <Text style={{ fontSize: 20 }}>📅</Text>
-                            <Text style={[styles.statVal, { color: C.textPrimary }]}>{activeDays}/7</Text>
-                            <Text style={[styles.statLbl, { color: C.textDim }]}>Active Days</Text>
-                        </View>
-                        <View style={[styles.statBox, { backgroundColor: C.inputBg }]}>
-                            <Text style={{ fontSize: 20 }}>🩸</Text>
-                            <Text style={[styles.statVal, { color: C.textPrimary }]}>{totalReports}</Text>
-                            <Text style={[styles.statLbl, { color: C.textDim }]}>Reports</Text>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.reportsVal, { color: C.textPrimary }]}>
+                                {totalReports} {totalReports === 1 ? 'report' : 'reports'}
+                            </Text>
+                            <Text style={[styles.statLbl, { color: C.textDim }]}>
+                                {totalReports === 0 ? 'Scan your first one to get started' : 'Read and explained so far'}
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -513,7 +506,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
 
                 <Text style={[styles.footer, { color: C.textDim }]}>
-                    Plainly · Your reports are stored in your own private account
+                    Blood Lab · Your reports are stored in your own private account
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -557,6 +550,9 @@ const styles = StyleSheet.create({
 
     // Fitness stats
     statsCard:    { borderRadius: 20, padding: 16, borderWidth: 1, gap: 12 },
+    reportsRow:   { flexDirection: 'row', alignItems: 'center', gap: 13 },
+    reportsIcon:  { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+    reportsVal:   { fontFamily: FONTS.title, fontSize: 17, letterSpacing: -0.3 },
     statsRow:     { flexDirection: 'row', gap: 8 },
     statBox:      { flex: 1, borderRadius: 14, padding: 10, alignItems: 'center', gap: 3 },
     statVal:      { fontSize: 15, fontFamily: FONTS.display },

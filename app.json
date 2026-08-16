@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Plainly",
+    "name": "Blood Lab",
     "slug": "ai-blood-report-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.bloodai.app",
       "infoPlist": {
-        "NSMotionUsageDescription": "Plainly uses motion data to count your daily steps."
+        "NSMotionUsageDescription": "Blood Lab uses motion data to count your daily steps."
       }
     },
     "android": {
@@ -39,8 +39,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Plainly needs your photos so you can pick a blood report you have already saved.",
-          "cameraPermission": "Plainly needs your camera so you can photograph a blood report."
+          "photosPermission": "Blood Lab needs your photos so you can pick a blood report you have already saved.",
+          "cameraPermission": "Blood Lab needs your camera so you can photograph a blood report."
         }
       ],
       "expo-document-picker",
@@ -50,13 +50,13 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Plainly uses your location to show local air quality."
+          "locationWhenInUsePermission": "Blood Lab uses your location to show local air quality."
         }
       ],
       [
         "expo-sensors",
         {
-          "motionPermission": "Plainly uses your device's motion sensor to count steps."
+          "motionPermission": "Blood Lab uses your device's motion sensor to count steps."
         }
       ]
     ],
