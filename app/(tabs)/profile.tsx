@@ -360,11 +360,14 @@ export default function ProfileScreen() {
                 <View style={[styles.settingsCard, { backgroundColor: C.bgCard, borderColor: C.border }]}>
                     <Text style={[styles.cardTitle, { color: C.textPrimary }]}>Health Tools</Text>
 
+                    {/* Colours come from the palette rather than literals: the
+                        old set was picked for the dark theme and reads neon on
+                        light. Weight, fitness and the meal scanner moved to
+                        More as Coming soon, so they are not listed twice. */}
                     {[
-                        { label: 'Track Weight',  subtitle: 'Log & chart your weight trend', icon: 'barbell-outline',    color: '#34d399', route: '/weight-tracker' },
-                        { label: 'Fitness Hub',   subtitle: 'Log workouts & heart rate zones', icon: 'fitness-outline',   color: '#a78bfa', route: '/fitness'        },
-                        { label: 'AI Health Chat',subtitle: 'Chat with your blood report',   icon: 'chatbubble-outline', color: '#38bdf8', route: '/ai-chat'         },
-                        { label: 'Meal Scanner',  subtitle: 'Scan food & track nutrition',   icon: 'restaurant-outline', color: '#f59e0b', route: '/meal-scan'       },
+                        { label: 'Health chat',  subtitle: 'Ask about your blood report', icon: 'chatbubble-outline', color: C.primary,   route: '/ai-chat'      },
+                        { label: 'Community',    subtitle: 'Posts from other people',     icon: 'people-outline',     color: C.secondary, route: '/(tabs)/feed'  },
+                        { label: 'Calculators',  subtitle: 'BMI, body fat, calorie needs',icon: 'calculator-outline', color: C.accent,    route: '/calculators'  },
                     ].map((item, i, arr) => (
                         <TouchableOpacity
                             key={item.route}

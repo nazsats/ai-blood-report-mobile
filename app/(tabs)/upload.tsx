@@ -391,6 +391,30 @@ export default function AnalyzeHubScreen() {
                     </Text>
                 ) : null}
 
+                {/* Three steps, shown rather than described. Someone who has
+                    never used an app like this cannot tell from an upload
+                    button what happens after they press it — and not knowing
+                    is what stops people trying. */}
+                <View style={st.steps}>
+                    {([
+                        { icon: 'camera', label: 'Photograph\nyour report' },
+                        { icon: 'sparkles', label: 'AI reads\nevery marker' },
+                        { icon: 'book', label: 'Read it in\nplain English' },
+                    ] as const).map((step, i) => (
+                        <View key={step.label} style={st.stepCol}>
+                            <View style={st.stepTop}>
+                                <View style={[st.stepCircle, { backgroundColor: C2.primaryMuted, borderColor: C2.primaryBorder }]}>
+                                    <Ionicons name={step.icon} size={21} color={C2.primary} />
+                                </View>
+                                {i < 2 ? (
+                                    <Ionicons name="chevron-forward" size={15} color={C2.textDim} style={st.stepArrow} />
+                                ) : null}
+                            </View>
+                            <Text style={[st.stepLabel, { color: C2.textSecondary }]}>{step.label}</Text>
+                        </View>
+                    ))}
+                </View>
+
                 <View style={[st.card, { backgroundColor: C2.bgCard, borderColor: C2.borderLight }]}>
                     <Text style={[st.cardHead, { color: C2.primary }]}>What you get</Text>
                     {[
@@ -427,6 +451,19 @@ export default function AnalyzeHubScreen() {
                     not replace your doctor.
                 </Text>
             </ScrollView>
+
+            {/* Chat sits on top of the scroll rather than inside it, so it is
+                reachable from anywhere on the page. It is the natural second
+                question after reading a result — "so what does that mean for
+                me?" — and burying it under More made people hunt for it. */}
+            <TouchableOpacity
+                style={[st.chatFab, { backgroundColor: C2.primary, shadowColor: C2.primaryDark }]}
+                onPress={() => router.push('/ai-chat')}
+                activeOpacity={0.85}
+                accessibilityLabel="Ask a health question"
+            >
+                <Ionicons name="chatbubbles" size={23} color="#ffffff" />
+            </TouchableOpacity>
         </View>
     );
 }
@@ -471,6 +508,27 @@ const st = StyleSheet.create({
     ghostTxt: { fontFamily: FONTS.bodyBold, fontSize: 14 },
 
     freeNote: { fontFamily: FONTS.body, fontSize: 12.5, textAlign: 'center', marginTop: 15 },
+
+    steps: { flexDirection: 'row', marginTop: 30 },
+    stepCol: { flex: 1, alignItems: 'center' },
+    stepTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%' },
+    stepCircle: {
+        width: 50, height: 50, borderRadius: 25, borderWidth: 1,
+        alignItems: 'center', justifyContent: 'center',
+    },
+    stepArrow: { position: 'absolute', right: -8 },
+    stepLabel: {
+        fontFamily: FONTS.body, fontSize: 11.5, lineHeight: 16,
+        textAlign: 'center', marginTop: 9,
+    },
+
+    chatFab: {
+        position: 'absolute', right: 20, bottom: 26,
+        width: 56, height: 56, borderRadius: 28,
+        alignItems: 'center', justifyContent: 'center',
+        shadowOpacity: 0.3, shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 }, elevation: 7,
+    },
 
     card: { borderRadius: 19, borderWidth: 1, padding: 19, marginTop: 26 },
     pickedCard: { marginTop: 4 },
