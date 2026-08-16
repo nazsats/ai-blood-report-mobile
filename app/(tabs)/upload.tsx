@@ -297,284 +297,234 @@ export default function AnalyzeHubScreen() {
     const reportScore   = latestReport?.overallScore;
     const reportScoreColor = reportScore >= 7 ? '#34d399' : reportScore >= 4 ? '#f59e0b' : '#f87171';
 
-    // ── Main Hub UI ───────────────────────────────────────────────────────────
+    // ── Home ──────────────────────────────────────────────────────────────────
+    // One job on this screen: get a blood report in. Everything the app used to
+    // offer here — meal scanning, calculators, habit tracking — now lives behind
+    // More, because a first-time visitor holding a lab result should not have to
+    // choose between five tools before starting.
+    const isGuest = !!user?.isAnonymous;
+
     return (
-        <ScrollView
-            style={[st.container, { backgroundColor: C2.bg }]}
-            contentContainerStyle={st.content}
-            showsVerticalScrollIndicator={false}
-        >
-            {/* ── Header ── */}
-            <Animated.View style={[st.header, {
-                opacity: enterAnim,
-                transform: [{ translateY: enterAnim.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] }) }],
-            }]}>
-                <View>
-                    <Text style={[st.headerLabel, { color: C2.textMuted }]}>Your Health</Text>
-                    <Text style={[st.headerTitle, { color: C2.textPrimary }]}>Analyze</Text>
-                </View>
-                {!!latestReport && (
+        <View style={[st.screen, { backgroundColor: C2.bg }]}>
+            <ScrollView contentContainerStyle={st.scroll} showsVerticalScrollIndicator={false}>
+                <View style={st.topRow}>
+                    <Text style={[st.wordmark, { color: C2.primary }]}>Plainly</Text>
                     <TouchableOpacity
-                        style={[st.lastReportBadge, { backgroundColor: C2.bgCard, borderColor: C2.border }]}
-                        onPress={() => router.push(`/results/${latestReport.id}`)}
-                        activeOpacity={0.8}
+                        style={[st.moreBtn, { borderColor: C2.border }]}
+                        onPress={() => router.push('/more')}
+                        activeOpacity={0.7}
                     >
-                        <View style={[st.scoreDot, { backgroundColor: reportScoreColor }]} />
-                        <View>
-                            <Text style={[st.lastReportScore, { color: reportScoreColor }]}>
-                                {latestReport.overallScore}/10
-                            </Text>
-                            <Text style={[st.lastReportLabel, { color: C2.textDim }]}>Last report</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={14} color={C2.textDim} />
+                        <Text style={[st.moreTxt, { color: C2.textSecondary }]}>More</Text>
+                        <Ionicons name="chevron-forward" size={13} color={C2.textMuted} />
                     </TouchableOpacity>
-                )}
-            </Animated.View>
-
-            {/* ── Profile tip ── */}
-            {!hasProfile && (
-                <TouchableOpacity
-                    style={[st.tipBanner, { backgroundColor: C2.primaryMuted, borderColor: C2.primaryBorder }]}
-                    onPress={() => router.push('/(tabs)/profile')}
-                    activeOpacity={0.8}
-                >
-                    <Ionicons name="person-circle-outline" size={16} color={C2.primaryLight} />
-                    <Text style={[st.tipText, { color: C2.textSecondary }]}>
-                        Complete your health profile for more personalized analysis
-                    </Text>
-                    <Ionicons name="chevron-forward" size={13} color={C2.primaryLight} />
-                </TouchableOpacity>
-            )}
-
-            {/* ════════════════════════════════════
-                SECTION 1 — Blood Report Analysis
-            ════════════════════════════════════ */}
-            <View style={[st.card, { backgroundColor: C2.bgCard, borderColor: C2.border }]}>
-                {/* Card header */}
-                <View style={st.cardHeader}>
-                    <View style={[st.cardIconWrap, { backgroundColor: 'rgba(239,68,68,0.12)' }]}>
-                        <Ionicons name="water" size={18} color="#f87171" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[st.cardTitle, { color: C2.textPrimary }]}>Blood Report Analysis</Text>
-                        <Text style={[st.cardSub, { color: C2.textDim }]}>Upload a PDF or photo · Get AI insights</Text>
-                    </View>
-                    <View style={[st.aiBadge, { backgroundColor: C2.primaryMuted }]}>
-                        <Ionicons name="sparkles" size={9} color={C2.primaryLight} />
-                        <Text style={[st.aiBadgeText, { color: C2.primaryLight }]}>GPT-4o</Text>
-                    </View>
                 </View>
 
-                {/* Upload options or file preview */}
+                <Text style={[st.h1, { color: C2.textPrimary }]}>
+                    Understand your{'\n'}
+                    <Text style={{ color: C2.primary }}>blood test.</Text>
+                </Text>
+                <Text style={[st.sub, { color: C2.textMuted }]}>
+                    Photograph your report and get every marker explained in plain English.
+                </Text>
+
                 {selectedFile ? (
-                    <View style={st.previewWrap}>
+                    <View style={[st.card, st.pickedCard, { backgroundColor: C2.bgCard, borderColor: C2.primaryBorder }]}>
                         {selectedFile.isImage ? (
-                            <Image source={{ uri: selectedFile.uri }} style={st.previewImage} resizeMode="contain" />
+                            <Image source={{ uri: selectedFile.uri }} style={st.preview} />
                         ) : (
-                            <View style={[st.pdfPreview, { backgroundColor: C2.primaryMuted }]}>
-                                <Ionicons name="document-text" size={44} color={C2.primaryLight} />
-                                <View style={[st.pdfBadge, { backgroundColor: C2.primary }]}>
-                                    <Text style={st.pdfBadgeText}>PDF</Text>
-                                </View>
+                            <View style={[st.pdfBox, { backgroundColor: C2.primaryMuted }]}>
+                                <Ionicons name="document-text" size={30} color={C2.primary} />
                             </View>
                         )}
-                        <View style={st.fileRow}>
-                            <Ionicons name="document" size={13} color={C2.primaryLight} />
-                            <Text style={[st.fileName, { color: C2.textSecondary }]} numberOfLines={1}>
-                                {selectedFile.name}
-                            </Text>
-                            <View style={[st.readyBadge, { backgroundColor: C2.accentMuted }]}>
-                                <Ionicons name="checkmark-circle" size={11} color={C2.accentLight} />
-                                <Text style={[st.readyText, { color: C2.accentLight }]}>Ready</Text>
-                            </View>
-                        </View>
+                        <Text style={[st.fileName, { color: C2.textPrimary }]} numberOfLines={1}>
+                            {selectedFile.name}
+                        </Text>
+
                         <TouchableOpacity
-                            style={[st.analyzeBtn, { backgroundColor: C2.primary }]}
+                            style={[st.primaryBtn, { backgroundColor: C2.primary }]}
                             onPress={handleAnalyze}
                             activeOpacity={0.85}
                         >
-                            <Ionicons name="sparkles" size={16} color="#fff" />
-                            <Text style={st.analyzeBtnText}>Analyze My Report</Text>
+                            <Ionicons name="sparkles" size={17} color="#ffffff" />
+                            <Text style={st.primaryTxt}>Explain this report</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setSelectedFile(null)} style={st.clearBtn}>
-                            <Text style={[st.clearBtnText, { color: C2.textDim }]}>Choose a different file</Text>
+
+                        <TouchableOpacity onPress={() => setSelectedFile(null)} activeOpacity={0.7}>
+                            <Text style={[st.linkTxt, { color: C2.textMuted }]}>Choose a different file</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
-                    <View style={st.uploadOptions}>
-                        {[
-                            { icon: 'camera-outline',   label: 'Camera',  action: takePhoto },
-                            { icon: 'images-outline',   label: 'Gallery', action: pickImage },
-                            { icon: 'document-outline', label: 'PDF',     action: pickDocument },
-                        ].map(opt => (
+                    <View style={st.actions}>
+                        <TouchableOpacity
+                            style={[st.primaryBtn, st.bigBtn, { backgroundColor: C2.primary }]}
+                            onPress={takePhoto}
+                            activeOpacity={0.85}
+                        >
+                            <Ionicons name="camera" size={20} color="#ffffff" />
+                            <Text style={st.primaryTxt}>Take a photo</Text>
+                        </TouchableOpacity>
+
+                        <View style={st.row}>
                             <TouchableOpacity
-                                key={opt.label}
-                                style={[st.uploadBtn, { backgroundColor: C2.inputBg, borderColor: C2.border }]}
-                                onPress={opt.action}
-                                activeOpacity={0.75}
+                                style={[st.ghostBtn, { backgroundColor: C2.bgCard, borderColor: C2.border }]}
+                                onPress={pickImage}
+                                activeOpacity={0.8}
                             >
-                                <View style={[st.uploadBtnIcon, { backgroundColor: C2.primaryMuted }]}>
-                                    <Ionicons name={opt.icon as any} size={22} color={C2.primaryLight} />
-                                </View>
-                                <Text style={[st.uploadBtnLabel, { color: C2.textSecondary }]}>{opt.label}</Text>
+                                <Ionicons name="images-outline" size={18} color={C2.primary} />
+                                <Text style={[st.ghostTxt, { color: C2.textSecondary }]}>Gallery</Text>
                             </TouchableOpacity>
-                        ))}
+                            <TouchableOpacity
+                                style={[st.ghostBtn, { backgroundColor: C2.bgCard, borderColor: C2.border }]}
+                                onPress={pickDocument}
+                                activeOpacity={0.8}
+                            >
+                                <Ionicons name="document-outline" size={18} color={C2.primary} />
+                                <Text style={[st.ghostTxt, { color: C2.textSecondary }]}>PDF</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 )}
 
-                {/* What you get */}
-                <View style={st.tagRow}>
-                    {['📊 All markers', '🔮 Predictions', '💊 Supplements', '🍽️ Meal plan'].map(t => (
-                        <View key={t} style={[st.tag, { backgroundColor: C2.inputBg }]}>
-                            <Text style={[st.tagText, { color: C2.textDim }]}>{t}</Text>
+                {isGuest && !selectedFile ? (
+                    <Text style={[st.freeNote, { color: C2.textMuted }]}>
+                        Your first report is free — no account needed.
+                    </Text>
+                ) : null}
+
+                <View style={[st.card, { backgroundColor: C2.bgCard, borderColor: C2.borderLight }]}>
+                    <Text style={[st.cardHead, { color: C2.primary }]}>What you get</Text>
+                    {[
+                        'Every marker explained in words, not jargon',
+                        'What sits inside the normal range, and what does not',
+                        'Why a result might be off, in plain terms',
+                        'Questions worth taking to your doctor',
+                    ].map((line) => (
+                        <View key={line} style={st.bullet}>
+                            <Ionicons name="checkmark" size={15} color={C2.accent} style={st.tick} />
+                            <Text style={[st.bulletTxt, { color: C2.textSecondary }]}>{line}</Text>
                         </View>
                     ))}
                 </View>
-            </View>
 
-            {/* ════════════════════════════════════
-                SECTION 2 — Meal Scanner
-            ════════════════════════════════════ */}
-            <TouchableOpacity
-                style={[st.card, { backgroundColor: C2.bgCard, borderColor: C2.border }]}
-                onPress={() => router.push('/meal-scan')}
-                activeOpacity={0.82}
-            >
-                <View style={st.cardHeader}>
-                    <View style={[st.cardIconWrap, { backgroundColor: 'rgba(245,158,11,0.12)' }]}>
-                        <Ionicons name="restaurant" size={18} color="#f59e0b" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[st.cardTitle, { color: C2.textPrimary }]}>Meal Scanner</Text>
-                        <Text style={[st.cardSub, { color: C2.textDim }]}>
-                            {todayCalories !== null
-                                ? `Today: ${todayCalories} kcal logged`
-                                : 'Snap a photo · Get instant nutrition data'}
-                        </Text>
-                    </View>
-                    <View style={[st.navChevron, { backgroundColor: C2.inputBg }]}>
-                        <Ionicons name="chevron-forward" size={16} color={C2.textDim} />
-                    </View>
-                </View>
-                <View style={st.tagRow}>
-                    {['📸 Food ID', '🧪 Macros', '💊 Micros', '❤️ Health score'].map(t => (
-                        <View key={t} style={[st.tag, { backgroundColor: C2.inputBg }]}>
-                            <Text style={[st.tagText, { color: C2.textDim }]}>{t}</Text>
+                {latestReport ? (
+                    <TouchableOpacity
+                        style={[st.card, st.lastCard, { backgroundColor: C2.bgCard, borderColor: C2.borderLight }]}
+                        onPress={() => router.push(`/results/${latestReport.id}`)}
+                        activeOpacity={0.8}
+                    >
+                        <View style={st.grow}>
+                            <Text style={[st.lastLabel, { color: C2.textMuted }]}>YOUR LAST REPORT</Text>
+                            <Text style={[st.lastTitle, { color: C2.textPrimary }]}>
+                                {reportScore != null ? `Score ${reportScore} out of 10` : 'View report'}
+                            </Text>
                         </View>
-                    ))}
-                </View>
-            </TouchableOpacity>
+                        <Ionicons name="chevron-forward" size={19} color={C2.textDim} />
+                    </TouchableOpacity>
+                ) : null}
 
-            {/* ════════════════════════════════════
-                SECTION 3 — Health Calculators
-            ════════════════════════════════════ */}
-            <TouchableOpacity
-                style={[st.card, { backgroundColor: C2.bgCard, borderColor: C2.border }]}
-                onPress={() => router.push('/calculators')}
-                activeOpacity={0.82}
-            >
-                <View style={st.cardHeader}>
-                    <View style={[st.cardIconWrap, { backgroundColor: 'rgba(99,102,241,0.12)' }]}>
-                        <Ionicons name="calculator" size={18} color="#a78bfa" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[st.cardTitle, { color: C2.textPrimary }]}>Health Calculators</Text>
-                        <Text style={[st.cardSub, { color: C2.textDim }]}>BMI · BMR · Water intake · Body fat</Text>
-                    </View>
-                    <View style={[st.navChevron, { backgroundColor: C2.inputBg }]}>
-                        <Ionicons name="chevron-forward" size={16} color={C2.textDim} />
-                    </View>
-                </View>
-                <View style={st.tagRow}>
-                    {['⚖️ BMI', '🔥 BMR / TDEE', '💧 Water', '📐 Body fat'].map(t => (
-                        <View key={t} style={[st.tag, { backgroundColor: C2.inputBg }]}>
-                            <Text style={[st.tagText, { color: C2.textDim }]}>{t}</Text>
-                        </View>
-                    ))}
-                </View>
-            </TouchableOpacity>
-
-            {/* ── Security note ── */}
-            <View style={st.securityRow}>
-                {['🔒 Encrypted', '🏥 Private', '⚡ AI-Powered', '🗑️ Auto-deleted 30d'].map(b => (
-                    <View key={b} style={[st.badge, { backgroundColor: C2.inputBg, borderColor: C2.border }]}>
-                        <Text style={[st.badgeText, { color: C2.textDim }]}>{b}</Text>
-                    </View>
-                ))}
-            </View>
-        </ScrollView>
+                <Text style={[st.disclaimer, { color: C2.textDim }]}>
+                    Plainly explains what your results say. It is not a diagnosis and does
+                    not replace your doctor.
+                </Text>
+            </ScrollView>
+        </View>
     );
 }
 
 const st = StyleSheet.create({
-    container: { flex: 1 },
-    content:   { paddingHorizontal: 16, paddingTop: 56, paddingBottom: 44, gap: 14 },
+    screen: { flex: 1 },
+    scroll: { padding: 22, paddingTop: 60, paddingBottom: 48 },
+    grow: { flex: 1 },
 
-    // Header
-    header:           { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
-    headerLabel:      { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
-    headerTitle:      { fontSize: 30, fontFamily: FONTS.title },
-    lastReportBadge:  { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 16, padding: 10, borderWidth: 1 },
-    scoreDot:         { width: 8, height: 8, borderRadius: 4 },
-    lastReportScore:  { fontSize: 14, fontFamily: FONTS.display, lineHeight: 18 },
-    lastReportLabel:  { fontSize: 10, fontFamily: FONTS.body },
+    topRow: {
+        flexDirection: 'row', alignItems: 'center',
+        justifyContent: 'space-between', marginBottom: 30,
+    },
+    wordmark: { fontFamily: FONTS.title, fontSize: 19, letterSpacing: -0.4 },
+    moreBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 3,
+        paddingVertical: 7, paddingHorizontal: 13,
+        borderRadius: 999, borderWidth: 1,
+    },
+    moreTxt: { fontFamily: FONTS.bodyBold, fontSize: 12.5 },
 
-    // Tip banner
-    tipBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, padding: 13, borderWidth: 1 },
-    tipText:   { flex: 1, fontSize: 12, fontFamily: FONTS.body, lineHeight: 18 },
+    // Generous line height on purpose: this is the first thing anyone reads,
+    // and a heavy weight set tight at this size reads as shouted rather than
+    // confident.
+    h1: { fontFamily: FONTS.display, fontSize: 34, lineHeight: 41, letterSpacing: -0.9 },
+    sub: { fontFamily: FONTS.body, fontSize: 14.5, lineHeight: 21, marginTop: 11, marginBottom: 28 },
 
-    // Cards
-    card:        { borderRadius: 22, padding: 18, borderWidth: 1, gap: 14 },
-    cardHeader:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    cardIconWrap:{ width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    cardTitle:   { fontSize: 16, fontFamily: FONTS.title, marginBottom: 2 },
-    cardSub:     { fontSize: 12, fontFamily: FONTS.body },
-    aiBadge:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 9, paddingHorizontal: 8, paddingVertical: 4 },
-    aiBadgeText: { fontSize: 10, fontFamily: FONTS.bodyBold },
-    navChevron:  { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+    actions: { gap: 11 },
+    row: { flexDirection: 'row', gap: 11 },
 
-    // Upload buttons
-    uploadOptions:  { flexDirection: 'row', gap: 10 },
-    uploadBtn:      { flex: 1, borderRadius: 16, paddingVertical: 16, alignItems: 'center', gap: 8, borderWidth: 1 },
-    uploadBtnIcon:  { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    uploadBtnLabel: { fontSize: 12, fontFamily: FONTS.bodyBold },
+    primaryBtn: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        gap: 9, borderRadius: 15, paddingVertical: 16,
+    },
+    bigBtn: { paddingVertical: 18 },
+    primaryTxt: { fontFamily: FONTS.bodyBold, fontSize: 15.5, color: '#ffffff' },
 
-    // File preview
-    previewWrap:  { gap: 12 },
-    previewImage: { height: 180, borderRadius: 14 },
-    pdfPreview:   { height: 120, alignItems: 'center', justifyContent: 'center', borderRadius: 14, position: 'relative' },
-    pdfBadge:     { position: 'absolute', top: 10, right: 10, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-    pdfBadgeText: { color: '#fff', fontSize: 10, fontFamily: FONTS.bodyBold },
-    fileRow:      { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    fileName:     { flex: 1, fontSize: 13, fontFamily: FONTS.body },
-    readyBadge:   { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
-    readyText:    { fontSize: 10, fontFamily: FONTS.bodyBold },
-    analyzeBtn:   { borderRadius: 15, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-    analyzeBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.title },
-    clearBtn:     { alignItems: 'center', paddingVertical: 6 },
-    clearBtnText: { fontSize: 12, fontFamily: FONTS.body },
+    ghostBtn: {
+        flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        gap: 7, borderRadius: 15, paddingVertical: 15, borderWidth: 1,
+    },
+    ghostTxt: { fontFamily: FONTS.bodyBold, fontSize: 14 },
 
-    // Tags
-    tagRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
-    tag:     { borderRadius: 9, paddingHorizontal: 10, paddingVertical: 5 },
-    tagText: { fontSize: 11, fontFamily: FONTS.body },
+    freeNote: { fontFamily: FONTS.body, fontSize: 12.5, textAlign: 'center', marginTop: 15 },
 
-    // Security badges
-    securityRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
-    badge:       { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
-    badgeText:   { fontSize: 11, fontFamily: FONTS.body },
+    card: { borderRadius: 19, borderWidth: 1, padding: 19, marginTop: 26 },
+    pickedCard: { marginTop: 4 },
+    cardHead: {
+        fontFamily: FONTS.title, fontSize: 13, letterSpacing: 0.4,
+        marginBottom: 13, textTransform: 'uppercase',
+    },
+    bullet: { flexDirection: 'row', alignItems: 'flex-start', gap: 9, marginBottom: 11 },
+    tick: { marginTop: 2 },
+    bulletTxt: { flex: 1, fontFamily: FONTS.body, fontSize: 13.5, lineHeight: 20 },
 
-    // Loading
-    loadingScreen:   { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
-    loadingGlow:     { position: 'absolute', width: 320, height: 320, borderRadius: 160, top: '10%' },
-    loadingOrb:      { marginBottom: 24 },
-    loadingOrbInner: { width: 88, height: 88, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-    loadingTitle:    { fontSize: 26, fontFamily: FONTS.title, marginBottom: 8, textAlign: 'center' },
-    loadingSubtitle: { fontSize: 14, fontFamily: FONTS.body, marginBottom: 32, textAlign: 'center' },
-    stepsContainer:  { width: '100%', gap: 10, marginBottom: 24 },
-    stepRow:         { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1 },
-    stepIcon:        { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    stepText:        { fontSize: 14, fontFamily: FONTS.body },
-    privacyNote:     { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
-    privacyText:     { fontSize: 11, fontFamily: FONTS.body, flex: 1 },
+    preview: { width: '100%', height: 168, borderRadius: 13, marginBottom: 13 },
+    pdfBox: { height: 92, borderRadius: 13, alignItems: 'center', justifyContent: 'center', marginBottom: 13 },
+    fileName: { fontFamily: FONTS.bodyBold, fontSize: 13.5, marginBottom: 15, textAlign: 'center' },
+    linkTxt: { fontFamily: FONTS.body, fontSize: 13, textAlign: 'center', marginTop: 13 },
+
+    lastCard: { flexDirection: 'row', alignItems: 'center', gap: 13 },
+    lastLabel: { fontFamily: FONTS.bodyBold, fontSize: 10.5, letterSpacing: 0.7, marginBottom: 4 },
+    lastTitle: { fontFamily: FONTS.title, fontSize: 16.5, letterSpacing: -0.3 },
+
+    disclaimer: {
+        fontFamily: FONTS.body, fontSize: 11.5, lineHeight: 17,
+        textAlign: 'center', marginTop: 30,
+    },
+
+    // ── Analysing state ───────────────────────────────────────────────────────
+    // Shown for the ~30s the report is being read. It names each step as it
+    // happens rather than showing a bare spinner: a wait you can see progress
+    // through feels shorter, and this is a wait people spend slightly anxious.
+    loadingScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 34 },
+    loadingGlow: {
+        position: 'absolute', width: 300, height: 300,
+        borderRadius: 150, opacity: 0.5,
+    },
+    loadingOrb: { marginBottom: 30 },
+    loadingOrbInner: {
+        width: 86, height: 86, borderRadius: 43,
+        alignItems: 'center', justifyContent: 'center',
+    },
+    loadingTitle: {
+        fontFamily: FONTS.display, fontSize: 22, letterSpacing: -0.5,
+        textAlign: 'center',
+    },
+    loadingSubtitle: {
+        fontFamily: FONTS.body, fontSize: 13.5, lineHeight: 20,
+        textAlign: 'center', marginTop: 9, marginBottom: 34,
+    },
+    stepsContainer: { width: '100%', gap: 3 },
+    stepRow: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 9 },
+    stepIcon: {
+        width: 29, height: 29, borderRadius: 15,
+        alignItems: 'center', justifyContent: 'center',
+    },
+    stepText: { flex: 1, fontFamily: FONTS.body, fontSize: 13.5 },
+    privacyNote: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 34 },
+    privacyText: { fontFamily: FONTS.body, fontSize: 11.5 },
 });

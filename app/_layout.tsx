@@ -8,15 +8,11 @@ import { ThemeProvider, useTheme } from '../constants/theme';
 import { useColors } from '../constants/colors';
 import { useFonts } from 'expo-font';
 import {
-    BebasNeue_400Regular,
-} from '@expo-google-fonts/bebas-neue';
-import {
-    RacingSansOne_400Regular,
-} from '@expo-google-fonts/racing-sans-one';
-import {
-    Lato_400Regular,
-    Lato_700Bold,
-} from '@expo-google-fonts/lato';
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 
 function AppNavigator() {
     const { user, loading } = useAuth();
@@ -26,19 +22,21 @@ function AppNavigator() {
     const C = useColors();
 
     const [fontsLoaded] = useFonts({
-        BebasNeue_400Regular,
-        RacingSansOne_400Regular,
-        Lato_400Regular,
-        Lato_700Bold,
+        PlusJakartaSans_400Regular,
+        PlusJakartaSans_600SemiBold,
+        PlusJakartaSans_700Bold,
+        PlusJakartaSans_800ExtraBold,
     });
 
     useEffect(() => {
         if (loading) return;
         const inAuthGroup = segments[0] === '(auth)';
-        if (!user && !inAuthGroup) {
-            router.replace('/(auth)/login');
-        } else if (user && inAuthGroup) {
-            router.replace('/(tabs)/home');
+        // No forced redirect to login: a visitor without an account still has
+        // an anonymous session, so they land on the scanner and can read a
+        // report before being asked for anything. Signing in lands on the
+        // scanner too — the dashboard is no longer part of the main flow.
+        if (user && inAuthGroup) {
+            router.replace('/(tabs)/upload');
         }
     }, [user, loading, segments]);
 
