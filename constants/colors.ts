@@ -3,15 +3,15 @@ import { useTheme } from './theme';
 
 /* ─── Dark Palette ─── */
 export const DARK = {
-    bg:             '#0a0015',
+    bg:             '#08110F',
     bgCard:         'rgba(255,255,255,0.05)',
-    bgCardSolid:    '#110827',
-    primary:        '#7c3aed',
-    primaryLight:   '#a78bfa',
-    primaryDark:    '#5b21b6',
-    primaryBorder:  'rgba(124,58,237,0.35)',
-    primaryMuted:   'rgba(124,58,237,0.12)',
-    secondary:      '#06b6d4',
+    bgCardSolid:    '#0F1D1A',
+    primary:        '#14B8A6',
+    primaryLight:   '#5EEAD4',
+    primaryDark:    '#0F766E',
+    primaryBorder:  'rgba(20,184,166,0.35)',
+    primaryMuted:   'rgba(20,184,166,0.12)',
+    secondary:      '#38BDF8',
     secondaryLight: '#67e8f9',
     secondaryMuted: 'rgba(6,182,212,0.1)',
     accent:         '#10b981',
@@ -29,13 +29,13 @@ export const DARK = {
     warningMuted:   'rgba(245,158,11,0.12)',
     danger:         '#ef4444',
     dangerMuted:    'rgba(239,68,68,0.12)',
-    tabBar:         '#0d0120',
+    tabBar:         '#0B1614',
     tabBarBorder:   'rgba(255,255,255,0.08)',
     inputBg:        'rgba(255,255,255,0.06)',
     shimmer1:       'rgba(255,255,255,0.04)',
     shimmer2:       'rgba(255,255,255,0.09)',
     cardBgHover:    'rgba(255,255,255,0.08)',
-    gradient:       ['#7c3aed', '#8b5cf6'] as string[],
+    gradient:       ['#0F766E', '#14B8A6'] as string[],
 };
 
 /* ─── Light Palette ───
