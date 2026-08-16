@@ -9,10 +9,7 @@
     "scheme": "bloodai",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bloodai.app",
-      "infoPlist": {
-        "NSMotionUsageDescription": "Blood Lab uses motion data to count your daily steps."
-      }
+      "bundleIdentifier": "com.bloodai.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +17,7 @@
         "backgroundColor": "#F7F9F9"
       },
       "package": "com.bloodai.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACTIVITY_RECOGNITION"]
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
@@ -46,19 +43,7 @@
       "expo-document-picker",
       "expo-asset",
       "expo-font",
-      "expo-web-browser",
-      [
-        "expo-location",
-        {
-          "locationWhenInUsePermission": "Blood Lab uses your location to show local air quality."
-        }
-      ],
-      [
-        "expo-sensors",
-        {
-          "motionPermission": "Blood Lab uses your device's motion sensor to count steps."
-        }
-      ]
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
