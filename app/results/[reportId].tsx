@@ -195,6 +195,25 @@ export default function ResultsScreen() {
                     {sc != null && (
                         <View style={[s.scoreCard, { backgroundColor: C.bgCard, borderColor: C.primaryBorder }]}>
                             <View style={[s.scoreGlow, { backgroundColor: C.primaryMuted }]} />
+
+                            {/* A sentence before a number. Someone opening this is
+                                waiting to find out whether they are ill, and "7/10"
+                                does not answer that — it just asks them to work out
+                                whether 7 is good. The count of markers needing a look
+                                is the fact they actually want, so it leads. */}
+                            <Text style={[s.verdict, { color: C.textPrimary }]}>
+                                {abnormal.length === 0
+                                    ? 'Everything here looks normal.'
+                                    : abnormal.length === 1
+                                    ? 'One result is worth a closer look.'
+                                    : `${abnormal.length} results are worth a closer look.`}
+                            </Text>
+                            <Text style={[s.verdictSub, { color: C.textMuted }]}>
+                                {abnormal.length === 0
+                                    ? `All ${tests.length} markers sit inside their normal range.`
+                                    : `The other ${normal.length} of ${tests.length} markers are in range. Being outside a range is common and often not a problem — the detail is below.`}
+                            </Text>
+
                             <Text style={[s.scoreLabel, { color: C.textMuted }]}>OVERALL HEALTH SCORE</Text>
                             <Text style={[s.scoreValue, { color: scoreColor(sc) }]}>
                                 {sc}<Text style={[s.scoreMax, { color: C.textMuted }]}>/10</Text>
@@ -210,8 +229,8 @@ export default function ResultsScreen() {
                             <View style={s.scoreStats}>
                                 {[
                                     { num: tests.length, label: 'Tests', color: C.textPrimary },
-                                    { num: abnormal.length, label: 'Abnormal', color: '#f59e0b' },
-                                    { num: preds.length, label: 'Risk Factors', color: C.primaryLight },
+                                    { num: abnormal.length, label: 'Need a look', color: C.warning },
+                                    { num: preds.length, label: 'To watch', color: C.primary },
                                 ].map((stat, i) => (
                                     <View key={i} style={s.scoreStat}>
                                         {i > 0 && <View style={[s.scoreStatDiv, { backgroundColor: C.borderLight }]} />}
@@ -500,6 +519,14 @@ const s = StyleSheet.create({
     // Score card
     scoreCard:     { borderRadius: 28, padding: 28, alignItems: 'center', overflow: 'hidden', borderWidth: 1, marginBottom: 0 },
     scoreGlow:     { position: 'absolute', width: 200, height: 200, borderRadius: 100, top: -60 },
+    verdict: {
+        fontFamily: FONTS.display, fontSize: 21, lineHeight: 28,
+        letterSpacing: -0.5, textAlign: 'center', marginBottom: 8,
+    },
+    verdictSub: {
+        fontFamily: FONTS.body, fontSize: 13, lineHeight: 19,
+        textAlign: 'center', marginBottom: 22, paddingHorizontal: 4,
+    },
     scoreLabel:    { fontSize: 11, fontFamily: FONTS.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2 },
     scoreValue:    { fontSize: 72, fontFamily: FONTS.display, lineHeight: 86 },
     scoreMax:      { fontSize: 28, fontFamily: FONTS.display },
