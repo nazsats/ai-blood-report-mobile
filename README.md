@@ -1,171 +1,226 @@
-# 🩸 AI Blood Report – Mobile App
+# 🩸 Blood Lab — Android app
 
-A premium, AI-powered health companion built with React Native (Expo). This mobile application allows users to upload their blood test reports, instantly analyzes them using advanced AI (GPT-4o), and visualizes the results in an easy-to-understand, personalized dashboard. It also features a community-driven health feed, AI meal scanning, fitness tracking, and comprehensive health calculators.
+**Your lab gives you numbers. Blood Lab gives you sentences.**
 
----
+Photograph a blood report, get every marker explained in plain English. Built with
+React Native and Expo, sharing a backend with
+[the web app](https://github.com/nazsats/blood-report-analyzer) at
+[www.bloodlab.in](https://www.bloodlab.in).
 
-## ✨ Features
-
-### 🔬 Blood Report Analysis
-- **📄 Smart Document Scanning**: Upload blood test results via PDF, gallery images, or take a photo directly using the device camera.
-- **🧠 AI-Powered Analysis**: Securely sends the report to the backend (Next.js) which extracts markers and provides medical-grade insights using GPT-4o.
-- **📊 Comprehensive Results Dashboard**:
-  - **Overall Health Score & Risk Level**: A quick snapshot of your health status.
-  - **Test Breakdown**: View abnormal and normal markers with detailed explanations, root causes, and action plans.
-  - **Health Predictions**: AI-generated risk factors with preventative advice.
-  - **Medication & Supplement Alerts**: Potential interactions based on your profile and test results.
-  - **Personalized Plans**: Actionable nutrition and lifestyle (exercise, sleep, stress) recommendations.
-- **📅 Historical Reports**: Keep track of all past blood tests in one secure place.
-
-### 🥗 AI Meal Scanner
-- **📷 Instant Meal Analysis**: Snap a photo of any meal and get an instant AI-powered nutritional breakdown.
-- **🔥 Calorie & Macro Tracking**: Identifies calories, protein, carbs, fats, fiber, and more per meal.
-- **🍽️ Ingredient Detection**: AI identifies individual food items and provides per-item nutritional data.
-- **📈 Daily Nutrition Log**: Tracks your total daily intake against your personalized health goals.
-- **💡 Health Recommendations**: Provides meal-specific health tips linked to your blood report results.
-
-### 💪 Fitness & Health Tracking
-- **🏃 Activity Tracking**: Log and monitor daily physical activity and workouts.
-- **🛌 Sleep Monitoring**: Track sleep patterns and quality scores.
-- **❤️ Vitals Dashboard**: Monitor key health indicators synced with your blood report data.
-- **📉 Progress Charts**: Visualize health trends over time.
-
-### 🧮 Health Calculators
-- **BMI Calculator**: Body Mass Index with personalized interpretation.
-- **Calorie Calculator**: Daily caloric needs based on age, weight, height, and activity level (TDEE).
-- **Hydration Calculator**: Daily water intake recommendations.
-- **Macro Calculator**: Personalized macronutrient targets.
-- **Heart Rate Zones**: Target heart rate ranges for different training intensities.
-- **Body Fat Estimator**: Estimated body fat percentage calculator.
-
-### 📰 AI Health Feed
-- Discover trending health topics and AI-curated articles.
-- Upvote/downvote posts and engage in comments.
-- **Daily Health Fact** updated regularly.
-- Community-driven insights tailored to your health profile.
-
-### 👤 Health Profile
-- Complete profile with age, gender, blood type, chronic conditions, and current medications.
-- Profile data provides AI with personalized context for better analysis across all features.
-
-### 🔐 Security & Privacy
-- Built on Firebase Authentication (Email/Password) and Firestore.
-- All sensitive health data is stored securely and tied to authenticated user accounts.
+> **Status:** in closed testing on Google Play. Package `com.bloodai.app` — the
+> old name, kept because an Android package id is permanent once uploaded and is
+> never shown to users.
 
 ---
 
-## 📱 App Structure (Tabs)
+## What it does
 
-| Tab | Route | Description |
-|-----|-------|-------------|
-| **Home** | `/home` | AI health dashboard with vitals, fitness summary, and quick actions |
-| **Feed** | `/feed` | Community health feed with AI-curated posts and daily health facts |
-| **Analyze** | `/upload` | Core scanning interface for uploading and analyzing blood reports |
-| **Reports** | `/history` | Personal vault of all past analyzed blood reports |
-| **Profile** | `/profile` | Manage personal health data and app preferences |
+The app does one thing well and keeps everything else out of the way.
 
-**Additional Screens:**
-- `/meal-scan` – AI-powered meal photo scanner and nutrition tracker
-- `/calculators` – Suite of health & fitness calculators
-- `/results/[id]` – Detailed blood report analysis results
+| | Step | What happens |
+|---|---|---|
+| **1** | **Scan** | Photograph the report, pick an image, or choose a PDF |
+| **2** | **Analyse** | The backend runs GPT-4.1 over it and writes the result to Firestore |
+| **3** | **Read** | Every marker, what is high or low, why, and what to do about it |
 
----
+For each test you get what it measures in everyday words, whether your value is
+normal, and — if it is not — the likely causes and a specific plan that
+references your actual number. Across the whole report: a health score, early
+warnings from patterns across markers, medication interaction flags, and food
+and lifestyle guidance tied to your results.
 
-## 🛠 Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| **Framework** | [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/) (SDK 52) |
-| **Routing** | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based navigation) |
-| **Styling** | Custom dark-mode design system with Animated API, skeleton loaders, glassmorphism |
-| **Auth & DB** | [Firebase](https://firebase.google.com/) (Authentication + Firestore) |
-| **AI Backend** | Next.js API routes + OpenAI GPT-4o (Vision + Text) |
-| **Camera** | `expo-image-picker`, `expo-camera` |
-| **Storage** | Firebase Firestore |
+You can also ask follow-up questions about your own report, and keep a history to
+compare against next time.
 
 ---
 
-## 🚀 Getting Started
+## How the screens fit together
 
-### Prerequisites
+```mermaid
+flowchart LR
+    L[Login<br/>or skip] --> S[Scan]
+    S --> A{Analysing}
+    A --> R[Results]
+    R --> C[Ask about<br/>your report]
+    R --> D[Doctor letter]
 
-- Node.js (v18+)
-- Expo CLI (`npm install -g expo-cli`)
-- Expo Go app on your physical device (or an iOS Simulator / Android Emulator)
-- A Firebase project with **Authentication** (Email/Password) and **Firestore** enabled
-- The companion **Next.js backend** running locally or deployed
+    S -.-> H[Reports<br/>history]
+    H --> R
+    S -.-> Y[You<br/>profile]
+    Y --> M[More]
 
-### Installation & Setup
+    M -.-> M1[Calculators]
+    M -.-> M2[Meal scan<br/>soon]
+    M -.-> M3[Fitness<br/>soon]
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/nazsats/ai-blood-report-mobile.git
-   cd ai-blood-report-mobile
-   ```
+    style S fill:#0F766E,color:#fff
+    style R fill:#047857,color:#fff
+    style M2 stroke-dasharray: 4 4
+    style M3 stroke-dasharray: 4 4
+```
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+**Three tabs, not six.** The app used to open on a dashboard with six tabs, which
+buried the one thing people install it for. Scanning is now the first screen.
+Everything else moved behind **More**, and the features that are not finished are
+labelled *Coming soon* instead of half-working.
 
-3. **Configure Environment Variables**:
-   Create a `.env` file in the project root:
-   ```env
-   EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-   EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-   EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+| Tab | Route | What it is |
+|---|---|---|
+| **Scan** | `(tabs)/upload` | The home screen. Camera, gallery, or PDF |
+| **Reports** | `(tabs)/history` | Every report you have analysed |
+| **You** | `(tabs)/profile` | Age, blood type, medications — context that improves the analysis. Community feed lives here |
 
-   # URL of your Next.js backend (use local IP for physical device testing)
-   EXPO_PUBLIC_API_URL=http://YOUR_LOCAL_IP:3000
-   ```
-
-4. **Start the development server**:
-   ```bash
-   npx expo start
-   ```
-
-5. **Run on Device**:
-   - Scan the QR code with **Expo Go** app
-   - Press `a` for Android Emulator
-   - Press `i` for iOS Simulator
+Routes kept but hidden with `href: null` — reachable by link, not by tab:
+`home`, `chat`, `feed`. Standalone screens: `ai-chat`, `calculators`, `more`,
+`meal-scan`, `fitness`, `weight-tracker`, `results/[id]`.
 
 ---
 
-## 🎨 UI / UX Highlights
+## Sign in later, not first
 
-- **Fluid Animations**: `Animated` API for transitions, pulse effects during loading, and interactive elements.
-- **Glassmorphism & Premium Dark Theme**: Deep purples, muted backgrounds, and glowing accents for a high-end feel.
-- **Skeleton Loaders**: `SkeletonCard` components keep the UI engaged during network/AI requests.
-- **Responsive Layouts**: Designed for both phones and tablets with adaptive layouts.
+```mermaid
+sequenceDiagram
+    participant U as New user
+    participant A as App
+    participant F as Firebase
+
+    U->>A: opens the app
+    A->>F: signInAnonymously()
+    F-->>A: uid
+    U->>A: scans a report
+    Note over A: first scan works,<br/>no account needed
+    U->>A: scans a second one
+    A->>U: asks for an account
+    U->>A: email + password
+    A->>F: linkWithCredential(anonymous, email)
+    Note over F: same uid — the first<br/>report is still theirs
+```
+
+Asking someone to register before they have seen the product costs more installs
+than it saves. The first scan runs against an anonymous Firebase user; when they
+do create an account, `linkWithCredential` upgrades that same uid, so the report
+they already have does not vanish at the moment they sign up.
 
 ---
 
-## 📁 Project Structure
+## Tech stack
+
+| Category | Choice | Why |
+|---|---|---|
+| **Framework** | React Native 0.81, Expo **SDK 54** | Pinned to 54 because Expo Go ships exactly one SDK, and moving ahead of it breaks testing on a real phone |
+| **Routing** | Expo Router 6 | File-based, so the folder tree is the navigation graph |
+| **Language** | TypeScript 5.9 | |
+| **Design** | Light theme, teal `#0F766E`, Plus Jakarta Sans | Replaced a dark violet theme and a motorsport display font. This is a medical product read by people who are worried |
+| **Auth** | Firebase Auth, anonymous → linked | See above |
+| **Data** | Cloud Firestore | Same project as the web app, so a report scanned on the phone opens on the web |
+| **Analysis** | Shared Next.js backend, **gpt-4.1** | The API key never ships inside the app |
+| **Camera & files** | `expo-image-picker`, `expo-document-picker` | |
+| **Animation** | Reanimated 4, Gesture Handler | |
+| **Builds** | EAS Build → AAB | |
+
+### Decisions worth knowing
+
+- **Permissions are subtracted, not just omitted.** Expo's autolinking re-adds
+  `RECORD_AUDIO` and location from transitive dependencies, so `app.json` lists
+  them under `blockedPermissions`. A blood report app asking for your microphone
+  is a Play Store review problem and a trust problem.
+- **The API key lives on the server.** The app talks to the Next.js backend, not
+  to OpenAI. Anything shipped in an APK is readable by anyone who downloads it.
+- **`babel-preset-expo` has to track the SDK.** `expo install --fix` does not
+  touch devDependencies, so it can sit a major version ahead and produce build
+  failures that read as unrelated.
+
+---
+
+## Running it
+
+### You will need
+
+- Node 18+
+- The **Expo Go** app, or a development build
+- A Firebase project with Authentication (anonymous + email/password) and Firestore
+- The [Next.js backend](https://github.com/nazsats/blood-report-analyzer) running
+  locally or deployed
+
+### Setup
+
+```bash
+git clone https://github.com/nazsats/ai-blood-report-mobile.git
+cd ai-blood-report-mobile
+npm install
+```
+
+Create `.env` in the project root:
+
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Your machine's LAN IP, not localhost — localhost on a phone means the phone.
+EXPO_PUBLIC_API_URL=http://192.168.1.x:3000
+```
+
+```bash
+npx expo start
+```
+
+Scan the QR code with Expo Go.
+
+**If the QR code fails**, check the SDK first. Expo Go supports exactly one SDK
+version at a time, and the error it gives you for a mismatch does not say so.
+`npx expo config --type public | grep sdkVersion` against the version Expo Go
+reports in its own UI.
+
+### Release build
+
+```bash
+npx eas build --platform android --profile production
+```
+
+Produces an AAB for Play Console. Build from `main` — building from a stale
+branch produces an installable, working, months-old app, which is a hard mistake
+to spot after the fact.
+
+---
+
+## Project layout
 
 ```
 ai-blood-report-mobile/
 ├── app/
-│   ├── (auth)/          # Login & registration screens
-│   ├── (tabs)/          # Main tab screens (home, feed, upload, history, profile)
-│   ├── results/         # Blood report results detail screen
-│   ├── meal-scan.tsx    # AI meal scanner screen
-│   ├── calculators.tsx  # Health calculators screen
-│   └── _layout.tsx      # Root navigation layout
+│   ├── (auth)/            # Login and registration
+│   ├── (tabs)/            # Scan, Reports, You — plus hidden home/chat/feed
+│   ├── results/[id].tsx   # Analysis results
+│   ├── more.tsx           # Everything not core
+│   ├── ai-chat.tsx        # Questions about your report
+│   ├── calculators.tsx    # BMI, TDEE, hydration, macros
+│   ├── meal-scan.tsx      # Coming soon
+│   ├── fitness.tsx        # Coming soon
+│   └── weight-tracker.tsx # Coming soon
 ├── lib/
-│   ├── firebaseClient.ts # Firebase initialization
-│   ├── fitnessData.ts    # Fitness & health data utilities
-│   └── healthData.ts     # Blood report data processing
+│   ├── firebaseClient.ts  # Firebase init
+│   ├── guestAuth.ts       # Anonymous sign-in and account linking
+│   └── healthData.ts      # Report parsing helpers
 ├── constants/
-│   ├── colors.ts        # Design system color tokens
-│   └── theme.tsx        # Typography and spacing tokens
-└── assets/              # Icons, images, fonts
+│   ├── colors.ts          # LIGHT and DARK palettes
+│   └── fonts.ts           # Plus Jakarta Sans
+└── assets/                # Icons, splash, fonts
 ```
 
 ---
 
-## 🛡 License
+## ⚠️ Not medical advice
 
-This project is proprietary. All rights reserved.
+Blood Lab explains what your results say. It is not a diagnosis and does not
+replace your doctor. Do not use it to make a medical decision on your own, and if
+something looks serious, speak to a professional.
+
+---
+
+## License
+
+Proprietary. All rights reserved.
