@@ -177,6 +177,22 @@ reports in its own UI.
 
 ### Release build
 
+**Push your environment to EAS first.** This is not optional, and getting it
+wrong produces an app that crashes the moment it opens:
+
+```bash
+npx eas env:push production --path .env
+npx eas env:list production          # confirm all 7 are there
+```
+
+`EXPO_PUBLIC_*` values are inlined into the bundle at build time. `.env` is
+gitignored, and EAS builds in the cloud from the repository — so your local
+`.env` never reaches the build machine. Expo Go reads it and works perfectly,
+while the AAB ships with every Firebase value `undefined` and dies on launch.
+Development cannot reveal this bug, which is what makes it worth a section.
+
+Then:
+
 ```bash
 npx eas build --platform android --profile production
 ```
@@ -184,6 +200,10 @@ npx eas build --platform android --profile production
 Produces an AAB for Play Console. Build from `main` — building from a stale
 branch produces an installable, working, months-old app, which is a hard mistake
 to spot after the fact.
+
+**Install the AAB on a real phone before submitting it.** Play Console's review
+does not reliably catch a launch crash, and a build that crashes on open is
+indistinguishable from a working one until someone opens it.
 
 ---
 

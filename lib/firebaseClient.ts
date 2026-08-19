@@ -16,7 +16,25 @@ const REQUIRED_ENV = [
 ] as const;
 const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
 if (missingEnv.length > 0) {
-    console.error(`[Firebase] Missing required env vars: ${missingEnv.join(', ')}\nCheck your .env file.`);
+    // This used to console.error and carry on, which meant initializeApp was
+    // handed a config full of undefined and threw something internal. The app
+    // died on launch with a stack trace that said nothing about the cause.
+    //
+    // It is worth knowing how this happens, because it cannot happen in
+    // development: EXPO_PUBLIC_* values are inlined at bundle time, .env is
+    // gitignored, and EAS builds in the cloud from the repo. So Expo Go reads
+    // your local .env and works perfectly, while the AAB ships with every one
+    // of these undefined. Fix with:
+    //
+    //     npx eas env:push production --path .env
+    //
+    // Still fatal — an app with no database cannot do anything useful — but
+    // now it names the problem in the crash log instead of hiding it.
+    throw new Error(
+        `[Blood Lab] Missing Firebase configuration: ${missingEnv.join(', ')}.\n` +
+        `In development, check .env. In a release build, these come from EAS: ` +
+        `run "npx eas env:push production --path .env" and rebuild.`
+    );
 }
 
 const firebaseConfig = {
@@ -54,4 +72,17 @@ if (!getApps().length) {
 export { auth };
 export const db: Firestore = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+/**
+ * Where the analysis backend lives.
+ *
+ * The fallback used to be http://localhost:3000, which is only ever right on a
+ * simulator sharing a machine with the dev server. On a real phone localhost is
+ * the phone, so a release build missing this variable would install, open, and
+ * fail every single analysis with a connection error — no clue as to why.
+ *
+ * Production is the safer default: a developer who forgets to set this gets a
+ * working app pointed at the live backend, rather than a broken one pointed at
+ * nothing. Local development sets EXPO_PUBLIC_API_BASE_URL to a LAN IP.
+ */
+export const API_BASE_URL =
+    process.env.EXPO_PUBLIC_API_BASE_URL || 'https://www.bloodlab.in';

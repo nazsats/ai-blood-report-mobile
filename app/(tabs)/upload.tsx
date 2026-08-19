@@ -210,7 +210,9 @@ export default function AnalyzeHubScreen() {
                 try { data = JSON.parse(uploadResult.body); }
                 catch { throw new Error(uploadResult.body || 'Invalid server response'); }
                 if (uploadResult.status < 200 || uploadResult.status >= 300) {
-                    throw new Error(data.error || 'Analysis failed on server');
+                    const err: any = new Error(data.message || data.error || 'Analysis failed on server');
+                    err.code = data.error;
+                    throw err;
                 }
             } else {
                 const formData = new FormData();
@@ -222,7 +224,11 @@ export default function AnalyzeHubScreen() {
                     headers: { Authorization: `Bearer ${idToken}` },
                 });
                 data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Analysis failed');
+                if (!res.ok) {
+                    const err: any = new Error(data.message || data.error || 'Analysis failed');
+                    err.code = data.error;
+                    throw err;
+                }
             }
 
             clearInterval(stepInterval);
@@ -238,6 +244,22 @@ export default function AnalyzeHubScreen() {
         } catch (error: any) {
             clearInterval(stepInterval);
             setUploading(false);
+
+            // Running out of free reports is not a failure, and it should not
+            // look like one. The server sends error:'payment_required' as a
+            // machine code alongside a human-readable `message`; this screen
+            // used to show the code, so the second scan anyone ever did popped
+            // up "Analysis Failed — payment_required".
+            if (error?.code === 'payment_required') {
+                Alert.alert(
+                    'No reports left',
+                    error.message ||
+                    'You have used your free report. Visit bloodlab.in to get more.',
+                    [{ text: 'OK' }],
+                );
+                return;
+            }
+
             Alert.alert('Analysis Failed', error.message || 'Something went wrong. Please try again.');
         }
     };
